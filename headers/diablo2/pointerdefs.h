@@ -422,3 +422,5 @@ VARPTR(STORM, WindowHandlers, WindowHandlerHashTable, 0x379300)  // Updated 1.14
 FUNCPTR(D2GAME, Rand, DWORD __fastcall, (DWORD* seed), 0x5C370) // Updated 1.14d //0045C370-BASE
 
 FUNCPTR(D2GAME, exit0, DWORD __fastcall, (), 0x576F) // NEW 1.14d //0040576F-BASE
+
+FUNCPTR(D2WIN, unknown_53B30, void __fastcall, (), 0x53B30) // Unknown function for hooking in-game drawing

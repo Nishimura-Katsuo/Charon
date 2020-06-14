@@ -32,16 +32,20 @@ void throttle() {
     sleep_until(nextFrame);
 }
 
+// Since we patch to override this function, we need to call it ourselves.
 void gameDraw() {
     drawStats();
+    D2::unknown_53B30();
 }
 
 void gameLoop() {
     //cout << "In-game!" << endl;
 }
 
+// Since we patch to override DrawSprites, we need to call it ourselves.
 void oogDraw() {
     drawStats();
+    D2::DrawSprites();
 }
 
 void oogLoop() {
@@ -67,13 +71,15 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     PatchCall<5>(Offset::Base + 0xFA663 + 5, throttle);
     SetBytes<13>(Offset::Base + 0xFA663 + 10, 0x90);
 
-    PatchJump<5>(Offset::Base + 0x53B30, gameDraw); // Hook the game draw
+    PatchCall<5>(Offset::Base + 0x572C9, gameDraw); // Hook the game draw
     PatchCall<5>(Offset::Base + 0xF9A0D, oogDraw); // Hook the oog draw
 
     PatchCall<6>(Offset::Base + 0xF5623, multi); // Allow multiple windows open
     PatchCall<5>(Offset::Base + 0x7C89D, _gameInput); // Intercept game input
     PatchCall<6>(Offset::Base + 0x4EF28, FTJReduce); // Reduce Failed To Join (QoL fix)
     SetBytes<1>(Offset::Base + 0x3BF60, 0xC3); // Prevent battle.net connections
+
+    SetBytes<1>(Offset::Base + 0x4846DC, 1); // enables debug printouts
 
     cout << "Charon loaded." << endl;
 }
