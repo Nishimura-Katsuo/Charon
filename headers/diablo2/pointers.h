@@ -1,3 +1,6 @@
+/**
+ * Declare game pointers.
+ */
 #pragma once
 
 #include "headers/diablo2/D2Structs.h"

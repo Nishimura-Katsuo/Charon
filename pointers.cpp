@@ -1,3 +1,6 @@
+/**
+ * Define game pointers.
+ */
 #include "headers/diablo2/D2Structs.h"
 
 namespace Offset {

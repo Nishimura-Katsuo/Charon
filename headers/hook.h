@@ -1,3 +1,6 @@
+/**
+ * Utilities for hooking into the goodies.
+ */
 #pragma once
 
 #include <cstring>
@@ -25,3 +28,15 @@ BOOL PatchFuncRef(DWORD pAddr, LPVOID pFunc) {
 
 template <DWORD dwLen> BOOL PatchCall(DWORD pAddr, LPVOID pFunc) { return PatchFuncRef<ASM_CALL, dwLen>(pAddr, pFunc); }
 template <DWORD dwLen> BOOL PatchJump(DWORD pAddr, LPVOID pFunc) { return PatchFuncRef<ASM_JMP, dwLen>(pAddr, pFunc); }
+
+template <DWORD dwLen>
+BOOL SetBytes(DWORD pAddr, BYTE value) {
+    DWORD dwOld;
+
+    if (VirtualProtect((LPVOID)pAddr, dwLen, PAGE_READWRITE, &dwOld)) {
+        std::memset((LPVOID)pAddr, value, dwLen);
+        return VirtualProtect((LPVOID)pAddr, dwLen, dwOld, &dwOld);
+    }
+
+    return FALSE;
+}
