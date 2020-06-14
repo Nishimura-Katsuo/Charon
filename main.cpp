@@ -37,8 +37,7 @@ void gameDraw() {
 }
 
 void gameLoop() {
-    cout << "In-game!" << endl;
-    throttle();
+    //cout << "In-game!" << endl;
 }
 
 void oogDraw() {
@@ -46,8 +45,7 @@ void oogDraw() {
 }
 
 void oogLoop() {
-    cout << "Out-of-game!" << endl;
-    throttle();
+    //cout << "Out-of-game!" << endl;
 }
 
 bool __fastcall gameInput(wchar_t* wMsg) {
@@ -58,11 +56,16 @@ bool __fastcall gameInput(wchar_t* wMsg) {
     return TRUE;
 }
 
-// 0x4FA66F
-
 void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
-    PatchCall<32>(Offset::Base + 0x51C2A, gameLoop); // override the entire sleepy section
-    PatchCall<23>(Offset::Base + 0xFA663, oogLoop); // override the entire sleepy section
+    // override the entire sleepy section - 32 bytes long
+    PatchCall<5>(Offset::Base + 0x51C2A, gameLoop);
+    PatchCall<5>(Offset::Base + 0x51C2A + 5, throttle);
+    SetBytes<22>(Offset::Base + 0x51C2A + 10, 0x90);
+
+    // override the entire sleepy section - 23 bytes long
+    PatchCall<5>(Offset::Base + 0xFA663, oogLoop);
+    PatchCall<5>(Offset::Base + 0xFA663 + 5, throttle);
+    SetBytes<13>(Offset::Base + 0xFA663 + 10, 0x90);
 
     PatchJump<5>(Offset::Base + 0x53B30, gameDraw); // Hook the game draw
     PatchCall<5>(Offset::Base + 0xF9A0D, oogDraw); // Hook the oog draw
