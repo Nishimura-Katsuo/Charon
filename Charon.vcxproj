@@ -152,12 +152,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="intercepts.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pointers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\common.h" />
     <ClInclude Include="headers\diablo2\D2Structs.h" />
+    <ClInclude Include="headers\diablo2\intercepts.h" />
     <ClInclude Include="headers\diablo2\pointerdefs.h" />
     <ClInclude Include="headers\diablo2\pointers.h" />
     <ClInclude Include="headers\hook.h" />

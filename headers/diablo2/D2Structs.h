@@ -1,3 +1,6 @@
+/**
+ * Borrowed this from d2bs. Thanks noah!
+ */
 #pragma once
 #ifndef _D2STRUCTS_H
 #define _D2STRUCTS_H

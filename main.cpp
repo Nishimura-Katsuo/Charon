@@ -3,25 +3,74 @@
  */
 
 #include "headers/common.h"
+#include "headers/diablo2/intercepts.h"
+#include <chrono>
+#include <thread>
 
 using std::wcout;
 using std::cout;
 using std::endl;
 
-void gameDraw() {
+void drawStats() {
     D2::DrawText(L"Charon v0.1", 700, 595, 4, 0);
 }
 
-void OOGDraw() {
-    D2::DrawText(L"Charon v0.1", 700, 595, 4, 0);
+// Keeps the game at a steady framerate without using too much CPU.
+// D2 doesn't do a great job at it by default, so we're helping out.
+void throttle() {
+    using frameDuration = std::chrono::duration<int64_t, std::ratio<1, 25>>; // Limit the game to 25 fps always (matches OOG and single player)
+    using std::chrono::system_clock;
+    using std::this_thread::sleep_until;
+    static system_clock::time_point nextFrame = system_clock::now(), now;
+
+    now = system_clock::now();
+
+    while (nextFrame < now) {
+        nextFrame += frameDuration{ 1 };
+    }
+
+    sleep_until(nextFrame);
+}
+
+void gameDraw() {
+    drawStats();
 }
 
 void gameLoop() {
+    cout << "In-game!" << endl;
+    throttle();
 }
 
+void oogDraw() {
+    drawStats();
+}
+
+void oogLoop() {
+    cout << "Out-of-game!" << endl;
+    throttle();
+}
+
+bool __fastcall gameInput(wchar_t* wMsg) {
+    if (wMsg[0] == L'/') {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+// 0x4FA66F
+
 void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
-    PatchCall<7>(Offset::Base + 0x51C31, gameLoop);
-    PatchJump<5>(Offset::Base + 0x53B30, gameDraw);
-    PatchCall<5>(Offset::Base + 0xF9A0D, OOGDraw);
+    PatchCall<32>(Offset::Base + 0x51C2A, gameLoop); // override the entire sleepy section
+    PatchCall<23>(Offset::Base + 0xFA663, oogLoop); // override the entire sleepy section
+
+    PatchJump<5>(Offset::Base + 0x53B30, gameDraw); // Hook the game draw
+    PatchCall<5>(Offset::Base + 0xF9A0D, oogDraw); // Hook the oog draw
+
+    PatchCall<6>(Offset::Base + 0xF5623, multi); // Allow multiple windows open
+    PatchCall<5>(Offset::Base + 0x7C89D, _gameInput); // Intercept game input
+    PatchCall<6>(Offset::Base + 0x4EF28, FTJReduce); // Reduce Failed To Join (QoL fix)
+    SetBytes<1>(Offset::Base + 0x3BF60, 0xC3); // Prevent battle.net connections
+
     cout << "Charon loaded." << endl;
 }
