@@ -4,8 +4,6 @@
 
 #include "headers/common.h"
 #include "headers/diablo2/intercepts.h"
-#include <chrono>
-#include <thread>
 
 using std::wcout;
 using std::cout;
@@ -13,7 +11,7 @@ using std::endl;
 
 void drawStats(bool inGame) {
     WCHAR msgtext[] = L"Charon v0.1";
-    DWORD width = 0, fileno = 1, screenmode = D2::GetScreenSize(), ScreenWidth = 0, ScreenHeight = 0;
+    DWORD width = 0, height = 0, fileno = 1, screenmode = D2::GetScreenSize(), ScreenWidth = 0, ScreenHeight = 0;
 
     switch (screenmode) {
     case 0:
@@ -27,43 +25,108 @@ void drawStats(bool inGame) {
         break;
     }
 
-    DWORD old = D2::SetFontFileNumber(1);
-    D2::GetTextSize(msgtext, &width, &fileno);
-    D2::DrawText(msgtext, ScreenWidth - width - 5, ScreenHeight - 5, inGame ? 0 : 4, 0);
-    D2::SetFontFileNumber(old);
+    D2::SetFont(1);
+    height = D2::GetTextSize(msgtext, &width, &fileno);
+    D2::DrawGameText(msgtext, ScreenWidth - width - 5, ScreenHeight - 5, inGame ? 0 : 4, 0);
 }
 
-// Keeps the game at a steady framerate without using too much CPU.
-// D2 doesn't do a great job at it by default, so we're helping out.
-void throttle() {
-    using frameDuration = std::chrono::duration<int64_t, std::ratio<1, 25>>; // Limit the game to 25 fps always (matches OOG and single player)
-    using std::chrono::system_clock;
-    using std::this_thread::sleep_until;
-    static system_clock::time_point nextFrame = system_clock::now(), now;
-
-    now = system_clock::now();
-
-    while (nextFrame < now) {
-        nextFrame += frameDuration{ 1 };
-    }
-
-    sleep_until(nextFrame);
+// We can use this to mark objects directly on the screen (could probably simulate item beams like diablo 3)
+void WorldToScreen(long *x, long *y) {
+    D2::MapToAbsScreen(x, y);
+    *x -= D2::GetMouseXOffset();
+    *y -= D2::GetMouseYOffset();
 }
 
-// Since we patch to override this function, we need to call it ourselves.
+void ScreenToWorld(long* x, long* y) {
+    D2::AbsScreenToMap(x, y);
+    *x += D2::GetMouseXOffset();
+    *y += D2::GetMouseYOffset();
+}
+
+// Handy for maphack stuff
+void WorldToAutomap(long* x, long* y) {
+    D2::MapToAbsScreen(x, y);
+    *x = *x / *D2::Divisor - D2::Offset->x + 8;
+    *y = *y / *D2::Divisor - D2::Offset->y - 8;
+}
+
+void DrawMinimapLine(long x1, long y1, long x2, long y2, DWORD dwColor = 0x62, DWORD dwOpacity = 0xFF) {
+    WorldToAutomap(&x1, &y1);
+    WorldToAutomap(&x2, &y2);
+    D2::DrawLine(x1, y1, x2, y2, dwColor, dwOpacity);
+}
+
+void DrawMinimapDot(long x1, long y1, DWORD dwColor = 0x62, DWORD dwOpacity = 0xFF) {
+    WorldToAutomap(&x1, &y1);
+    D2::DrawLine(x1 - 1, y1, x1 + 1, y1, dwColor, dwOpacity);
+    D2::DrawLine(x1, y1 - 1, x1, y1 + 1, dwColor, dwOpacity);
+}
+
+void DrawMinimapX(long x, long y, DWORD dwColor = 0x62, DWORD dwOpacity = 0xFF, int size = 5) {
+    DrawMinimapLine(x, y - size, x, y + size, dwColor, dwOpacity);
+    DrawMinimapLine(x - size, y, x + size, y, dwColor, dwOpacity);
+}
+
+bool isEnemy(D2::Types::UnitAny *unit) {
+    DWORD hp = D2::GetUnitStat(unit, 6, 0) >> 8, alignment = D2::GetUnitStat(unit, 172, 0);
+    return hp > 0 && alignment != 2;
+}
+
 void gameDraw() {
     drawStats(true);
-    //D2::unknown_53B30();
+
+    if (*D2::AutomapOn) {
+        // Client side tracks missiles
+        // Needs filtering, and maybe coloring 
+        BYTE d = 3;
+        for (int c = 0; c < 128; c++) {
+            for (D2::Types::UnitAny* unit = D2::ClientSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
+                DrawMinimapDot(unit->pPath->xPos, unit->pPath->yPos, 0x99, 0xFF);
+            }
+        }
+
+        // Server side tracks enemies
+        // Needs filtering
+        d = 1;
+        for (int c = 0; c < 128; c++) {
+            for (D2::Types::UnitAny* unit = D2::ServerSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
+                if (isEnemy(unit)) {
+                    DWORD color = 10;
+
+                    if (unit->pMonsterData->fBoss) {
+                        color = 12;
+                    }
+                    else if (unit->pMonsterData->fChamp) {
+                        color = 12;
+                    }
+                    else if (unit->pMonsterData->fMinion) {
+                        color = 12;
+                    }
+                    else if (unit->pMonsterData->fUnk) {
+                        color = 13;
+                    }
+                    else {
+                        color = 10;
+                    }
+
+                    DrawMinimapX(unit->pPath->xPos, unit->pPath->yPos, color);
+
+                    // Turn this into a stat overlay with flags, etc for debugging
+                    long sX = unit->pPath->xPos, sY = unit->pPath->yPos;
+                    WorldToScreen(&sX, &sY);
+                    D2::DrawRectangle(sX - 10, sY - 10, sX + 10, sY + 10, color, 1);
+                }
+            }
+        }
+    }
 }
 
 void gameLoop() {
     //cout << "In-game!" << endl;
 }
 
-// Since we patch to override DrawSprites, we need to call it ourselves.
 void oogDraw() {
     drawStats(false);
-    D2::DrawSprites();
 }
 
 void oogLoop() {
