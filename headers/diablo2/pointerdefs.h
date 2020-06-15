@@ -7,7 +7,7 @@
 FUNCPTR(D2CLIENT, GetQuestInfo, void* __stdcall, (void), 0xB32D0) // Updated 1.14d //004B32D0-BASE
 
 FUNCPTR(D2CLIENT, SubmitItem, void __fastcall, (DWORD dwItemId), 0xB2370) // Updated 1.14d //004B2370-BASE
-FUNCPTR(D2CLIENT, Transmute, void __fastcall, (void), 0x8A0D0)            // Updated 1.14d //0048A0D0-BASE
+//FUNCPTR(D2CLIENT, Transmute, void __fastcall, (void), 0x8A0D0)            // Updated 1.14d //0048A0D0-BASE
 
 FUNCPTR(D2CLIENT, FindClientSideUnit, D2::Types::UnitAny* __fastcall, (DWORD dwId, DWORD dwType), 0x63990) // Updated 1.14d //00463990-BASE
 FUNCPTR(D2CLIENT, FindServerSideUnit, D2::Types::UnitAny* __fastcall, (DWORD dwId, DWORD dwType), 0x639B0) // Updated 1.14d //004639B0-BASE
@@ -29,7 +29,9 @@ FUNCPTR(D2CLIENT, ShopAction, void __fastcall, (D2::Types::UnitAny* pNpc, D2::Ty
 0xB3870) // Updated 1.14d //004B3870-BASE
 
 FUNCPTR(D2CLIENT, CloseNPCInteract, void __fastcall, (void), 0xB3F10) // Updated 1.14d //004B3F10-BASE
-FUNCPTR(D2CLIENT, CloseInteract, void __fastcall, (void), 0x4C6B0)    // Updated 1.14d //0044C6B0-BASE
+//FUNCPTR(D2CLIENT, CloseInteract, void __fastcall, (void), 0x4C6B0)    // Updated 1.14d //0044C6B0-BASE
+
+// GHIDRA is updated to here so far
 
 FUNCPTR(D2CLIENT, GetAutomapSize, DWORD __stdcall, (void), 0x5A710)                                                     // Updated 1.14d //0045A710-BASE
 FUNCPTR(D2CLIENT, NewAutomapCell, D2::Types::AutomapCell* __fastcall, (), 0x57C30)                                                 // Updated 1.14d //00457C30-BASE
@@ -103,6 +105,7 @@ VARPTR(D2CLIENT, MercReviveCost, DWORD, 0x3C0DD0) // Updated 1.14d //007C0DD0-BA
 
 VARPTR(D2CLIENT, ServerSideUnitHashTables, D2::Types::UnitHashTable, 0x3A5E70) // Updated 1.14d //007A5E70-BASE
 VARPTR(D2CLIENT, ClientSideUnitHashTables, D2::Types::UnitHashTable, 0x3A5270) // Updated 1.14d //007A5270-BASE
+VARPTR(D2CLIENT, AnotherPossibleUnitHashTable, D2::Types::UnitHashTable, 0x3A5870) // Updated 1.14d //007A5870-BASE
 
 VARPTR(D2CLIENT, ViewportY, int, 0x3A5208) // Updated 1.14d //007A5208-BASE **MouseOffsetY
 VARPTR(D2CLIENT, ViewportX, int, 0x3A520C) // Updated 1.14d //007A520C-BASE **MouseOffsetX
