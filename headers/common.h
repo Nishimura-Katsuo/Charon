@@ -15,3 +15,8 @@ struct DllMainArgs {
     DWORD  ul_reason_for_call;
     LPVOID lpReserved;
 };
+
+// Apparently OOG is hard coded to 800x600? Sounds dumb.
+namespace D2 {
+    const DWORD DEFAULT_SCREEN_WIDTH = 800, DEFAULT_SCREEN_HEIGHT = 600;
+}
