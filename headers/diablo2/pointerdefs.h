@@ -385,9 +385,9 @@ FUNCPTR(D2WIN, LoadCellFile, CellFile* __fastcall, (const char* szFile, int Type
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 FUNCPTR(D2WIN, TakeScreenshot, void __fastcall, (), 0xFA7A0)                                                               // Updated 1.14d //004FA7A0-BASE
-FUNCPTR(D2WIN, DrawText, void __fastcall, (const wchar_t* wStr, int xPos, int yPos, DWORD dwColor, DWORD dwUnk), 0x102320) // Updated 1.14d //00502320-BASE
+FUNCPTR(D2WIN, DrawText, void __fastcall, (const wchar_t* wStr, int xPos, int yPos, DWORD dwColor, DWORD dwCenterFlagMaybe), 0x102320) // Updated 1.14d //00502320-BASE
 FUNCPTR(D2WIN, GetTextSize, DWORD __fastcall, (wchar_t* wStr, DWORD* dwWidth, DWORD* dwFileNo), 0x102520)                 // Updated 1.14d //00502520-BASE
-FUNCPTR(D2WIN, SetTextSize, DWORD __fastcall, (DWORD dwSize), 0x102EF0)                                                    // Updated 1.14d //00502EF0-BASE
+FUNCPTR(D2WIN, SetFontFileNumber, DWORD __fastcall, (DWORD dwSize), 0x102EF0)                                                    // Updated 1.14d //00502EF0-BASE
 FUNCPTR(D2WIN, GetTextWidthFileNo, DWORD __fastcall, (wchar_t* wStr, DWORD* dwWidth, DWORD* dwFileNo), 0x102520)          // Updated 1.14d //00502520-BASE
 FUNCPTR(D2WIN, DestroyEditBox, DWORD __fastcall, (Control* box), 0xFDAA0)                                                 // Updated 1.14d //004FDAA0-BASE
 FUNCPTR(D2WIN, DestroyControl, VOID __stdcall, (Control* pControl), 0xf95c0)                                              // Updated 1.14d // 004f95c0-BASE
@@ -423,4 +423,5 @@ FUNCPTR(D2GAME, Rand, DWORD __fastcall, (DWORD* seed), 0x5C370) // Updated 1.14d
 
 FUNCPTR(D2GAME, exit0, DWORD __fastcall, (), 0x576F) // NEW 1.14d //0040576F-BASE
 
-FUNCPTR(D2WIN, unknown_53B30, void __fastcall, (), 0x53B30) // Unknown function for hooking in-game drawing
+VARPTR(D2CLIENT, CurrentWaypointMenuTab, DWORD, 0x3BF086)
+VARPTR(D2CLIENT, DrawFPS, DWORD, 0x3BB3A4)
