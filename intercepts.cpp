@@ -31,3 +31,37 @@ void __declspec(naked) FTJReduce() {
 		ret;
 	}
 }
+
+void oogDraw();
+void gameDraw();
+
+// Since we patch to override DrawSprites, we need to call it ourselves.
+void _oogDraw() {
+	DWORD old = D2::SetFont(1);
+	oogDraw();
+	D2::SetFont(old);
+	D2::DrawSprites();
+}
+
+void _gameDraw() {
+	DWORD old = D2::SetFont(1);
+	gameDraw();
+	D2::SetFont(old);
+}
+
+// Keeps the game at a steady framerate without using too much CPU.
+// D2 doesn't do a great job at it by default, so we're helping out.
+void _throttle() {
+	using frameDuration = std::chrono::duration<int64_t, std::ratio<1, 25>>; // Limit the game to 25 fps always (matches OOG and single player)
+	using std::chrono::system_clock;
+	using std::this_thread::sleep_until;
+	static system_clock::time_point nextFrame = system_clock::now(), now;
+
+	now = system_clock::now();
+
+	while (nextFrame < now) {
+		nextFrame += frameDuration{ 1 };
+	}
+
+	sleep_until(nextFrame);
+}

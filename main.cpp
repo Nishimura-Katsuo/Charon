@@ -81,16 +81,16 @@ bool __fastcall gameInput(wchar_t* wMsg) {
 void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     // override the entire sleepy section - 32 bytes long
     PatchCall<5>(Offset::Base + 0x51C2A, gameLoop);
-    PatchCall<5>(Offset::Base + 0x51C2A + 5, throttle);
+    PatchCall<5>(Offset::Base + 0x51C2A + 5, _throttle);
     SetBytes<22>(Offset::Base + 0x51C2A + 10, 0x90);
 
     // override the entire sleepy section - 23 bytes long
     PatchCall<5>(Offset::Base + 0xFA663, oogLoop);
-    PatchCall<5>(Offset::Base + 0xFA663 + 5, throttle);
+    PatchCall<5>(Offset::Base + 0xFA663 + 5, _throttle);
     SetBytes<13>(Offset::Base + 0xFA663 + 10, 0x90);
 
-    PatchCall<5>(Offset::Base + 0x4CB14, gameDraw); // Hook the game draw
-    PatchCall<5>(Offset::Base + 0xF9A0D, oogDraw); // Hook the oog draw
+    PatchCall<5>(Offset::Base + 0x4CB14, _gameDraw); // Hook the game draw
+    PatchCall<5>(Offset::Base + 0xF9A0D, _oogDraw); // Hook the oog draw
 
     PatchCall<6>(Offset::Base + 0xF5623, multi); // Allow multiple windows open
     PatchCall<5>(Offset::Base + 0x7C89D, _gameInput); // Intercept game input
