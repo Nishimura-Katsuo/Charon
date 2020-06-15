@@ -11,23 +11,10 @@ using std::endl;
 
 void drawStats(bool inGame) {
     WCHAR msgtext[] = L"Charon v0.1";
-    DWORD width = 0, height = 0, fileno = 1, screenmode = D2::GetScreenSize(), ScreenWidth = 0, ScreenHeight = 0;
+    DWORD width = 0, height = 0, fileno = 1;
 
-    switch (screenmode) {
-    case 0:
-        ScreenWidth = 640;
-        ScreenHeight = 480;
-        break;
-    case 1:
-    case 2:
-        ScreenWidth = 800;
-        ScreenHeight = 600;
-        break;
-    }
-
-    D2::SetFont(1);
     height = D2::GetTextSize(msgtext, &width, &fileno);
-    D2::DrawGameText(msgtext, ScreenWidth - width - 5, ScreenHeight - 5, inGame ? 0 : 4, 0);
+    D2::DrawGameText(msgtext, *D2::ScreenSizeX - width - 5, *D2::ScreenSizeY - 5, inGame ? 0 : 4, 0);
 }
 
 // We can use this to mark objects directly on the screen (could probably simulate item beams like diablo 3)

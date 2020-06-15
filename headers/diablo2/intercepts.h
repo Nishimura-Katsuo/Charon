@@ -8,6 +8,8 @@
 #include <chrono>
 #include <thread>
 
+const DWORD DEFAULT_FONT = 1;
+
 bool __fastcall gameInput(wchar_t* wMsg);
 void _gameInput();
 HMODULE __stdcall multi(LPSTR Class, LPSTR Window);
