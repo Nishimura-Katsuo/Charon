@@ -13,20 +13,57 @@ namespace ASM {
     const BYTE JMP = 0xE9;
 }
 
-BOOL PatchCall(DWORD pAddr, LPVOID pFunc, DWORD dwExtraNopLength = 0, BYTE instruction = ASM::CALL);
-BOOL SetBytes(DWORD pAddr, BYTE value, DWORD dwLen);
+class BYTES {
+    BYTE value;
+    size_t length;
+public:
+    BYTES(BYTE value, size_t length);
+    friend class GamePatch;
+};
 
-template <class T>
-BOOL SetData(DWORD pAddr, std::vector<T> values) {
-    DWORD dwOld, dwSize = values.size(), dwLen = sizeof(T) * dwSize;
+class OFFSET {
+    size_t length;
+public:
+    OFFSET(size_t length);
+    friend class GamePatch;
+};
 
-    if (VirtualProtect((LPVOID)pAddr, dwLen, PAGE_READWRITE, &dwOld)) {
-        T* addr = (T*)pAddr;
-        for (size_t c = 0; c < dwSize; c++) {
-            addr[c] = values[c];
-        }
-        return VirtualProtect((LPVOID)pAddr, dwLen, dwOld, &dwOld);
-    }
+class CALL {
+    LPVOID pFunc;
+public:
+    CALL(LPVOID pFunc);
+    friend class GamePatch;
+};
 
-    return FALSE;
-}
+class JUMP {
+    LPVOID pFunc;
+public:
+    JUMP(LPVOID pFunc);
+    friend class GamePatch;
+};
+
+class GamePatch {
+    DWORD pAddr = NULL;
+
+    template <class T> GamePatch& d(const T data);
+
+public:
+    GamePatch(DWORD dwAddr);
+    GamePatch& operator << (const bool data);
+    GamePatch& operator << (const char data);
+    GamePatch& operator << (const wchar_t data);
+    GamePatch& operator << (const unsigned char data);
+    GamePatch& operator << (const short data);
+    GamePatch& operator << (const unsigned short data);
+    GamePatch& operator << (const int data);
+    GamePatch& operator << (const unsigned int data);
+    GamePatch& operator << (const long data);
+    GamePatch& operator << (const unsigned long data);
+    GamePatch& operator << (const long long data);
+    GamePatch& operator << (const unsigned long long data);
+    GamePatch& operator << (const float data);
+    GamePatch& operator << (const double data);
+    GamePatch& operator << (const BYTES bytes);
+    GamePatch& operator << (const OFFSET offset);
+    GamePatch& operator << (const CALL call);
+};
