@@ -441,3 +441,5 @@ ASMPTR(Base, DisableBattleNetPatch, 0x3BF60)
 ASMPTR(Base, EnableDebugPrint, 0x4846DC)
 
 FUNCPTR(D2GFX, GetScreenModeSize, void __stdcall, (int nResolutionMode, int* pResRightMax, int* pResBottomMax), 0xF5570) // NEW 1.14d //004F5570-BASE
+
+ASMPTR(Base, NullDebugPrintf, 0x11A480)

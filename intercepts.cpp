@@ -79,3 +79,18 @@ void _gameAutomapDraw() {
 	D2::DrawAutomap();
 	gameAutomapPostDraw();
 }
+
+// This is based on the actual source for print... uses varargs.
+int __stdcall printf_newline(const char* format, ...) {
+	va_list arg;
+	int done;
+
+	va_start(arg, format);
+	done = vfprintf(stdout, format, arg);
+	va_end(arg);
+
+	// We want to force a newline after debug prints :)
+	puts("\n");
+
+	return done;
+}

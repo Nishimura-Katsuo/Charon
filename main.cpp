@@ -152,6 +152,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::FTJReducePatch) << CALL(FTJReduce) << ASM::NOP; // Reduce Failed To Join (QoL fix)
     MemoryPatch(D2::DisableBattleNetPatch) << BYTE(0xC3); // Prevent battle.net connections
     MemoryPatch(D2::EnableDebugPrint) << true; // Enable in-game debug prints
+    MemoryPatch(D2::NullDebugPrintf) << JUMP(printf_newline); // Enable even more console debug prints
 
     *D2::NoPickUp = true;
 
