@@ -21,10 +21,17 @@ public:
     friend class MemoryPatch;
 };
 
-class OFFSET {
+class SKIP {
     size_t length;
 public:
-    OFFSET(size_t length);
+    SKIP(size_t length);
+    friend class MemoryPatch;
+};
+
+class REWIND {
+    size_t length;
+public:
+    REWIND(size_t length);
     friend class MemoryPatch;
 };
 
@@ -64,6 +71,7 @@ public:
     MemoryPatch& operator << (const float data);
     MemoryPatch& operator << (const double data);
     MemoryPatch& operator << (const BYTES bytes);
-    MemoryPatch& operator << (const OFFSET offset);
+    MemoryPatch& operator << (const SKIP offset);
+    MemoryPatch& operator << (const REWIND offset);
     MemoryPatch& operator << (const CALL call);
 };

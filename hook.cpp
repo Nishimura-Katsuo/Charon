@@ -45,12 +45,19 @@ BYTES::BYTES(BYTE value, size_t length) {
     this->value = value;
     this->length = length;
 }
-OFFSET::OFFSET(size_t length) {
+
+SKIP::SKIP(size_t length) {
     this->length = length;
 }
+
+REWIND::REWIND(size_t length) {
+    this->length = length;
+}
+
 CALL::CALL(LPVOID pFunc) {
     this->pFunc = pFunc;
 }
+
 JUMP::JUMP(LPVOID pFunc) {
     this->pFunc = pFunc;
 }
@@ -85,8 +92,13 @@ MemoryPatch& MemoryPatch::operator << (const BYTES bytes) {
     return *this;
 }
 
-MemoryPatch& MemoryPatch::operator << (const OFFSET offset) {
+MemoryPatch& MemoryPatch::operator << (const SKIP offset) {
     pAddr += offset.length;
+    return *this;
+}
+
+MemoryPatch& MemoryPatch::operator << (const REWIND offset) {
+    pAddr -= offset.length;
     return *this;
 }
 
