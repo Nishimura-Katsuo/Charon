@@ -3,7 +3,6 @@
  */
 
 #include "headers/common.h"
-#include "headers/diablo2/intercepts.h"
 
 using std::wcout;
 using std::cout;
@@ -14,7 +13,7 @@ void drawStats(bool inGame) {
     DWORD width = 0, height = 0, fileno = 1;
 
     height = D2::GetTextSize(msgtext, &width, &fileno);
-    D2::DrawGameText(msgtext, *D2::ScreenSizeX - width - 5, *D2::ScreenSizeY - 5, inGame ? 0 : 4, 0);
+    D2::DrawGameText(msgtext, D2::ScreenWidth - width - 5, D2::ScreenHeight - 5, inGame ? 0 : 4, 0);
 }
 
 // We can use this to mark objects directly on the screen (could probably simulate item beams like diablo 3)
