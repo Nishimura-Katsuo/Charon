@@ -150,7 +150,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::GameInputPatch) << CALL(_gameInput); // Intercept game input
     MemoryPatch(D2::FTJReducePatch) << CALL(FTJReduce) << ASM::NOP; // Reduce Failed To Join (QoL fix)
     MemoryPatch(D2::DisableBattleNetPatch) << BYTE(0xC3); // Prevent battle.net connections
-    MemoryPatch(D2::EnableDebugPrint) << BYTE(1);
+    MemoryPatch(D2::EnableDebugPrint) << true; // Enable in-game debug prints
 
     *D2::NoPickUp = true;
 
