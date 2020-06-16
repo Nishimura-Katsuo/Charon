@@ -8,7 +8,7 @@ using std::wcout;
 using std::cout;
 using std::endl;
 
-void drawStats(bool inGame) {
+void drawBranding(bool inGame) {
     WCHAR msgtext[] = L"Charon v0.1";
     DWORD width = 0, height = 0, fileno = 1;
 
@@ -108,7 +108,7 @@ void gameAutomapPostDraw() {
 }
 
 void gameDraw() {
-    drawStats(true);
+    drawBranding(true);
 }
 
 void gameLoop() {
@@ -116,7 +116,7 @@ void gameLoop() {
 }
 
 void oogDraw() {
-    drawStats(false);
+    drawBranding(false);
 }
 
 void oogLoop() {
@@ -137,6 +137,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
         << CALL(gameLoop)
         << CALL(_throttle)
         << BYTES(ASM::NOP, 22);
+
     // override the entire sleepy section - 23 bytes long
     MemoryPatch(D2::oogLoopPatch)
         << CALL(oogLoop)

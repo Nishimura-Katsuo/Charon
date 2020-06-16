@@ -74,4 +74,5 @@ public:
     MemoryPatch& operator << (const SKIP offset);
     MemoryPatch& operator << (const REWIND offset);
     MemoryPatch& operator << (const CALL call);
+    MemoryPatch& operator << (const JUMP jump);
 };

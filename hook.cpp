@@ -106,3 +106,8 @@ MemoryPatch& MemoryPatch::operator << (const CALL call) {
     pAddr += PatchCall(ASM::CALL, pAddr, call.pFunc);
     return *this;
 }
+
+MemoryPatch& MemoryPatch::operator << (const JUMP jump) {
+    pAddr += PatchCall(ASM::JMP, pAddr, jump.pFunc);
+    return *this;
+}
