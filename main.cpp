@@ -134,23 +134,24 @@ bool __fastcall gameInput(wchar_t* wMsg) {
 
 void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     // override the entire sleepy section - 32 bytes long
-    PatchCall(D2::GameLoopPatch, gameLoop);
-    PatchCall(D2::GameLoopPatch + 5, _throttle, 22);
-
+    GamePatch(D2::GameLoopPatch)
+        << CALL(gameLoop)
+        << CALL(_throttle)
+        << BYTES(ASM::NOP, 22);
     // override the entire sleepy section - 23 bytes long
-    PatchCall(D2::oogLoopPatch, oogLoop);
-    PatchCall(D2::oogLoopPatch + 5, _throttle, 13);
+    GamePatch(D2::oogLoopPatch)
+        << CALL(oogLoop)
+        << CALL(_throttle)
+        << BYTES(ASM::NOP, 13);
 
-    PatchCall(D2::GameAutomapDrawPatch, _gameAutomapDraw); // Hook the automap draw
-    PatchCall(D2::GameDrawPatch, _gameDraw); // Hook the game draw
-    PatchCall(D2::oogDrawPatch, _oogDraw); // Hook the oog draw
-
-    PatchCall(D2::MultiPatch, multi, 1); // Allow multiple windows open
-    PatchCall(D2::GameInputPatch, _gameInput); // Intercept game input
-    PatchCall(D2::FTJReducePatch, FTJReduce, 1); // Reduce Failed To Join (QoL fix)
-
-    SetData<BYTE>(D2::DisableBattleNetPatch, { 0xC3 }); // Prevent battle.net connections
-    SetData<BYTE>(D2::EnableDebugPrint, { 1 }); // enables debug printouts
+    GamePatch(D2::GameAutomapDrawPatch) << CALL(_gameAutomapDraw); // Hook the automap draw
+    GamePatch(D2::GameDrawPatch) << CALL(_gameDraw); // Hook the game draw
+    GamePatch(D2::oogDrawPatch) << CALL(_oogDraw); // Hook the oog draw
+    GamePatch(D2::MultiPatch) << CALL(multi) << ASM::NOP; // Allow multiple windows open
+    GamePatch(D2::GameInputPatch) << CALL(_gameInput); // Intercept game input
+    GamePatch(D2::FTJReducePatch) << CALL(FTJReduce) << ASM::NOP; // Reduce Failed To Join (QoL fix)
+    GamePatch(D2::DisableBattleNetPatch) << BYTE(0xC3); // Prevent battle.net connections
+    GamePatch(D2::EnableDebugPrint) << BYTE(1);
 
     *D2::NoPickUp = true;
 
