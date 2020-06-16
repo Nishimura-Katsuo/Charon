@@ -11,6 +11,7 @@ namespace ASM {
     const BYTE NOP = 0x90;
     const BYTE CALL = 0xE8;
     const BYTE JMP = 0xE9;
+    const BYTE RET = 0xC3;
 }
 
 class BYTES {
