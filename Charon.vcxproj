@@ -152,6 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="hook.cpp" />
     <ClCompile Include="intercepts.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pointers.cpp" />

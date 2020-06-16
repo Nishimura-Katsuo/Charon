@@ -17,3 +17,4 @@ void FTJReduce();
 void _oogDraw();
 void _gameDraw();
 void _throttle();
+void _gameAutomapDraw();
