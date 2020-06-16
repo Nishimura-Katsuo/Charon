@@ -18,3 +18,7 @@ void _oogDraw();
 void _gameDraw();
 void _throttle();
 void _gameAutomapDraw();
+
+namespace D2 {
+    extern int ScreenWidth, ScreenHeight;
+}

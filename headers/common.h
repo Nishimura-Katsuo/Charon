@@ -9,6 +9,7 @@
 #include <iostream>
 #include "headers/diablo2/pointers.h"
 #include "headers/hook.h"
+#include "headers/diablo2/intercepts.h"
 
 struct DllMainArgs {
     HMODULE hModule;

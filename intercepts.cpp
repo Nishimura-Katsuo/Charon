@@ -2,7 +2,6 @@
  * Borrowed a bit from d2bs. Thanks noah!
  */
 #include "headers/common.h"
-#include "headers/diablo2/intercepts.h"
 
 void __declspec(naked) _gameInput() {
 	__asm {
@@ -36,11 +35,13 @@ void __declspec(naked) FTJReduce() {
 void oogDraw();
 void gameDraw();
 
+namespace D2 {
+	int ScreenWidth = 0, ScreenHeight = 0;
+}
+
 // Since we patch to override DrawSprites, we need to call it ourselves.
 void _oogDraw() {
-	// This is hard coded and the game doesn't maintain it when OOG, so we do it here.
-	*D2::ScreenSizeX = D2::DEFAULT_SCREEN_WIDTH;
-	*D2::ScreenSizeY = D2::DEFAULT_SCREEN_HEIGHT;
+	D2::GetScreenModeSize(D2::GetScreenSize(), &D2::ScreenWidth, &D2::ScreenHeight);
 	DWORD old = D2::SetFont(DEFAULT_FONT);
 	oogDraw();
 	D2::SetFont(old);
