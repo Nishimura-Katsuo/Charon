@@ -56,41 +56,41 @@ JUMP::JUMP(LPVOID pFunc) {
 }
 
 template <class T>
-GamePatch& GamePatch::d(const T data) {
+MemoryPatch& MemoryPatch::d(const T data) {
     pAddr += SetData(pAddr, data);
     return *this;
 }
 
-GamePatch::GamePatch(DWORD dwAddr) {
+MemoryPatch::MemoryPatch(DWORD dwAddr) {
     pAddr = dwAddr;
 }
 
-GamePatch& GamePatch::operator << (const bool data) { return d<bool>(data); }
-GamePatch& GamePatch::operator << (const char data) { return d<char>(data); }
-GamePatch& GamePatch::operator << (const wchar_t data) { return d<wchar_t>(data); }
-GamePatch& GamePatch::operator << (const unsigned char data) { return d<unsigned char>(data); }
-GamePatch& GamePatch::operator << (const short data) { return d<short>(data); }
-GamePatch& GamePatch::operator << (const unsigned short data) { return d<unsigned short>(data); }
-GamePatch& GamePatch::operator << (const int data) { return d<int>(data); }
-GamePatch& GamePatch::operator << (const unsigned int data) { return d<unsigned int>(data); }
-GamePatch& GamePatch::operator << (const long data) { return d<long>(data); }
-GamePatch& GamePatch::operator << (const unsigned long data) { return d<unsigned long>(data); }
-GamePatch& GamePatch::operator << (const long long data) { return d<long long>(data); }
-GamePatch& GamePatch::operator << (const unsigned long long data) { return d<unsigned long long>(data); }
-GamePatch& GamePatch::operator << (const float data) { return d<float>(data); }
-GamePatch& GamePatch::operator << (const double data) { return d<double>(data); }
+MemoryPatch& MemoryPatch::operator << (const bool data) { return d<bool>(data); }
+MemoryPatch& MemoryPatch::operator << (const char data) { return d<char>(data); }
+MemoryPatch& MemoryPatch::operator << (const wchar_t data) { return d<wchar_t>(data); }
+MemoryPatch& MemoryPatch::operator << (const unsigned char data) { return d<unsigned char>(data); }
+MemoryPatch& MemoryPatch::operator << (const short data) { return d<short>(data); }
+MemoryPatch& MemoryPatch::operator << (const unsigned short data) { return d<unsigned short>(data); }
+MemoryPatch& MemoryPatch::operator << (const int data) { return d<int>(data); }
+MemoryPatch& MemoryPatch::operator << (const unsigned int data) { return d<unsigned int>(data); }
+MemoryPatch& MemoryPatch::operator << (const long data) { return d<long>(data); }
+MemoryPatch& MemoryPatch::operator << (const unsigned long data) { return d<unsigned long>(data); }
+MemoryPatch& MemoryPatch::operator << (const long long data) { return d<long long>(data); }
+MemoryPatch& MemoryPatch::operator << (const unsigned long long data) { return d<unsigned long long>(data); }
+MemoryPatch& MemoryPatch::operator << (const float data) { return d<float>(data); }
+MemoryPatch& MemoryPatch::operator << (const double data) { return d<double>(data); }
 
-GamePatch& GamePatch::operator << (const BYTES bytes) {
+MemoryPatch& MemoryPatch::operator << (const BYTES bytes) {
     pAddr += SetBytes(pAddr, bytes.value, bytes.length);
     return *this;
 }
 
-GamePatch& GamePatch::operator << (const OFFSET offset) {
+MemoryPatch& MemoryPatch::operator << (const OFFSET offset) {
     pAddr += offset.length;
     return *this;
 }
 
-GamePatch& GamePatch::operator << (const CALL call) {
+MemoryPatch& MemoryPatch::operator << (const CALL call) {
     pAddr += PatchCall(ASM::CALL, pAddr, call.pFunc);
     return *this;
 }

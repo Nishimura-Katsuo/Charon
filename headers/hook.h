@@ -18,52 +18,52 @@ class BYTES {
     size_t length;
 public:
     BYTES(BYTE value, size_t length);
-    friend class GamePatch;
+    friend class MemoryPatch;
 };
 
 class OFFSET {
     size_t length;
 public:
     OFFSET(size_t length);
-    friend class GamePatch;
+    friend class MemoryPatch;
 };
 
 class CALL {
     LPVOID pFunc;
 public:
     CALL(LPVOID pFunc);
-    friend class GamePatch;
+    friend class MemoryPatch;
 };
 
 class JUMP {
     LPVOID pFunc;
 public:
     JUMP(LPVOID pFunc);
-    friend class GamePatch;
+    friend class MemoryPatch;
 };
 
-class GamePatch {
+class MemoryPatch {
     DWORD pAddr = NULL;
 
-    template <class T> GamePatch& d(const T data);
+    template <class T> MemoryPatch& d(const T data);
 
 public:
-    GamePatch(DWORD dwAddr);
-    GamePatch& operator << (const bool data);
-    GamePatch& operator << (const char data);
-    GamePatch& operator << (const wchar_t data);
-    GamePatch& operator << (const unsigned char data);
-    GamePatch& operator << (const short data);
-    GamePatch& operator << (const unsigned short data);
-    GamePatch& operator << (const int data);
-    GamePatch& operator << (const unsigned int data);
-    GamePatch& operator << (const long data);
-    GamePatch& operator << (const unsigned long data);
-    GamePatch& operator << (const long long data);
-    GamePatch& operator << (const unsigned long long data);
-    GamePatch& operator << (const float data);
-    GamePatch& operator << (const double data);
-    GamePatch& operator << (const BYTES bytes);
-    GamePatch& operator << (const OFFSET offset);
-    GamePatch& operator << (const CALL call);
+    MemoryPatch(DWORD dwAddr);
+    MemoryPatch& operator << (const bool data);
+    MemoryPatch& operator << (const char data);
+    MemoryPatch& operator << (const wchar_t data);
+    MemoryPatch& operator << (const unsigned char data);
+    MemoryPatch& operator << (const short data);
+    MemoryPatch& operator << (const unsigned short data);
+    MemoryPatch& operator << (const int data);
+    MemoryPatch& operator << (const unsigned int data);
+    MemoryPatch& operator << (const long data);
+    MemoryPatch& operator << (const unsigned long data);
+    MemoryPatch& operator << (const long long data);
+    MemoryPatch& operator << (const unsigned long long data);
+    MemoryPatch& operator << (const float data);
+    MemoryPatch& operator << (const double data);
+    MemoryPatch& operator << (const BYTES bytes);
+    MemoryPatch& operator << (const OFFSET offset);
+    MemoryPatch& operator << (const CALL call);
 };
