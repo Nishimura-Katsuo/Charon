@@ -69,3 +69,12 @@ void _throttle() {
 
 	sleep_until(nextFrame);
 }
+
+void gameAutomapPreDraw();
+void gameAutomapPostDraw();
+
+void _gameAutomapDraw() {
+	gameAutomapPreDraw();
+	D2::DrawAutomap();
+	gameAutomapPostDraw();
+}

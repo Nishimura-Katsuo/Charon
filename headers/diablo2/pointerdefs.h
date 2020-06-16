@@ -96,7 +96,6 @@ VARPTR(D2CLIENT, MouseOffsetZ, int, 0x3A5214) // Updated 1.14d //007A5214-BASE
 VARPTR(D2CLIENT, MouseOffsetX, int, 0x3A520C) // Updated 1.14d //007A520C-BASE
 
 VARPTR(D2CLIENT, AutomapOn, DWORD, 0x3A27E8)            // Updated 1.14d //007A27E8-BASE
-VARPTR(D2CLIENT, AutomapMode, int, 0x311254)            // Updated 1.14d //00711254-BASE **Divisor**
 VARPTR(D2CLIENT, Offset, POINT, 0x3A5198)               // Updated 1.14d //007A5198-BASE
 VARPTR(D2CLIENT, AutomapLayer, D2::Types::AutomapLayer*, 0x3A5164) // Updated 1.14d //007A5164-BASE
 
@@ -237,7 +236,6 @@ ASMPTR(D2CLIENT, SendPacket_II, 0x12AE62)   // Updated **NEW** 1.14d //0052AE62-
 
 FUNCPTR(D2COMMON, InitLevel, void __stdcall, (D2::Types::Level* pLevel), 0x2424A0)       // Updated 1.14d //006424A0-BASE
 FUNCPTR(D2COMMON, UnloadAct, unsigned __stdcall, (D2::Types::Act* pAct), 0x21AFD3)       // Updated 1.14d //0061AFD3-BASE
-FUNCPTR(D2COMMON, GetObjectTxt, D2::Types::ObjectTxt* __stdcall, (DWORD objno), 0x240E90) // Updated 1.14d //00640E90-BASE
 FUNCPTR(D2COMMON, LoadAct, D2::Types::Act* __stdcall,
 (DWORD ActNumber, DWORD MapId, DWORD Unk, DWORD Unk_2, DWORD Unk_3, DWORD Unk_4, DWORD TownLevelId, DWORD Func_1, DWORD Func_2),
 0x2194A0) // Updated 1.14d //006194A0-BASE
@@ -426,5 +424,18 @@ FUNCPTR(D2GAME, Rand, DWORD __fastcall, (DWORD* seed), 0x5C370) // Updated 1.14d
 
 FUNCPTR(D2GAME, exit0, DWORD __fastcall, (), 0x576F) // NEW 1.14d //0040576F-BASE
 
-VARPTR(D2CLIENT, CurrentWaypointMenuTab, DWORD, 0x3BF086)
-VARPTR(D2CLIENT, DrawFPS, DWORD, 0x3BB3A4)
+VARPTR(Base, CurrentWaypointMenuTab, DWORD, 0x3BF086)
+VARPTR(Base, DrawFPS, BOOL, 0x3BB3A4)
+
+FUNCPTR(Base, DrawAutomap, void __fastcall, (), 0x5ad60) // NEW 1.14d //0045ad60-BASE
+
+ASMPTR(Base, GameLoopPatch, 0x51C2A)
+ASMPTR(Base, oogLoopPatch, 0xFA663)
+ASMPTR(Base, GameAutomapDrawPatch, 0x56fa5)
+ASMPTR(Base, GameDrawPatch, 0x4CB14)
+ASMPTR(Base, oogDrawPatch, 0xF9A0D)
+ASMPTR(Base, MultiPatch, 0xF5623)
+ASMPTR(Base, GameInputPatch, 0x7C89D)
+ASMPTR(Base, FTJReducePatch, 0x4EF28)
+ASMPTR(Base, DisableBattleNetPatch, 0x3BF60)
+ASMPTR(Base, EnableDebugPrint, 0x4846DC)

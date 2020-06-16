@@ -3,38 +3,28 @@
  */
 #pragma once
 
+#include <windows.h>
 #include <cstring>
+#include <vector>
 
-#define ASM_NOP 0x90
-#define ASM_CALL 0xE8
-#define ASM_JMP 0xE9
-
-template <BYTE instruction, DWORD dwLen>
-BOOL PatchFuncRef(DWORD pAddr, LPVOID pFunc) {
-    DWORD dwOld, dwFunc = (DWORD)pFunc - (pAddr + 5);
-    BYTE bytes[dwLen];
-
-    std::memset(bytes, ASM_NOP, dwLen);
-    bytes[0] = instruction;
-    *(DWORD*)&bytes[1] = dwFunc;
-
-    if (VirtualProtect((LPVOID)pAddr, dwLen, PAGE_READWRITE, &dwOld)) {
-        std::memcpy((LPVOID)pAddr, bytes, dwLen);
-        return VirtualProtect((LPVOID)pAddr, dwLen, dwOld, &dwOld);
-    }
-
-    return FALSE;
+namespace ASM {
+    const BYTE NOP = 0x90;
+    const BYTE CALL = 0xE8;
+    const BYTE JMP = 0xE9;
 }
 
-template <DWORD dwLen> BOOL PatchCall(DWORD pAddr, LPVOID pFunc) { return PatchFuncRef<ASM_CALL, dwLen>(pAddr, pFunc); }
-template <DWORD dwLen> BOOL PatchJump(DWORD pAddr, LPVOID pFunc) { return PatchFuncRef<ASM_JMP, dwLen>(pAddr, pFunc); }
+BOOL PatchCall(DWORD pAddr, LPVOID pFunc, DWORD dwExtraNopLength = 0, BYTE instruction = ASM::CALL);
+BOOL SetBytes(DWORD pAddr, BYTE value, DWORD dwLen);
 
-template <DWORD dwLen>
-BOOL SetBytes(DWORD pAddr, BYTE value) {
-    DWORD dwOld;
+template <class T>
+BOOL SetData(DWORD pAddr, std::vector<T> values) {
+    DWORD dwOld, dwSize = values.size(), dwLen = sizeof(T) * dwSize;
 
     if (VirtualProtect((LPVOID)pAddr, dwLen, PAGE_READWRITE, &dwOld)) {
-        std::memset((LPVOID)pAddr, value, dwLen);
+        T* addr = (T*)pAddr;
+        for (size_t c = 0; c < dwSize; c++) {
+            addr[c] = values[c];
+        }
         return VirtualProtect((LPVOID)pAddr, dwLen, dwOld, &dwOld);
     }
 

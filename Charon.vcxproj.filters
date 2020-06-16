@@ -47,5 +47,8 @@
     <ClCompile Include="intercepts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
