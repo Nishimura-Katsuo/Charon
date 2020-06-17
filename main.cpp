@@ -58,6 +58,26 @@ bool isEnemy(D2::Types::UnitAny *unit) {
     return hp > 0 && alignment != 2;
 }
 
+void gameUnitPreDraw() {
+    // Could use this to draw tile markers or something.
+}
+
+void gameUnitPostDraw() {
+    // Server side tracks enemies
+    // Needs filtering
+    BYTE d = 1;
+    for (int c = 0; c < 128; c++) {
+        for (D2::Types::UnitAny* unit = D2::ServerSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
+            if (isEnemy(unit)) {
+                // Turn this into a stat overlay with flags, etc for debugging
+                long sX = unit->pPath->xPos, sY = unit->pPath->yPos;
+                WorldToScreen(&sX, &sY);
+                D2::DrawRectangle(sX - 8, sY - 8, sX + 8, sY + 8, 10, 1);
+            }
+        }
+    }
+}
+
 void gameAutomapPreDraw() {
 
 }
@@ -97,17 +117,12 @@ void gameAutomapPostDraw() {
                 }
 
                 DrawMinimapX(unit->pPath->xPos, unit->pPath->yPos, color);
-
-                // Turn this into a stat overlay with flags, etc for debugging
-                long sX = unit->pPath->xPos, sY = unit->pPath->yPos;
-                WorldToScreen(&sX, &sY);
-                D2::DrawRectangle(sX - 10, sY - 10, sX + 10, sY + 10, color, 1);
             }
         }
     }
 }
 
-void gameDraw() {
+void gamePostDraw() {
     drawBranding(true);
 }
 
@@ -115,7 +130,7 @@ void gameLoop() {
     //cout << "In-game!" << endl;
 }
 
-void oogDraw() {
+void oogPostDraw() {
     drawBranding(false);
 }
 
@@ -123,8 +138,8 @@ void oogLoop() {
     //cout << "Out-of-game!" << endl;
 }
 
-bool __fastcall gameInput(wchar_t* wMsg) {
-    if (wMsg[0] == L'/') {
+BOOL __fastcall chatInput(wchar_t* wMsg) {
+    if (wMsg[0] == L'~') {
         return FALSE;
     }
 
@@ -144,11 +159,13 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
         << CALL(_throttle)
         << BYTES(ASM::NOP, 13);
 
+    MemoryPatch(D2::PreDrawUnitsPatch) << CALL(_preDrawUnitsPatch); // Hook the unit draw
+    MemoryPatch(D2::DrawWorldEndPatch) << JUMP(gameUnitPostDraw);
     MemoryPatch(D2::GameAutomapDrawPatch) << CALL(_gameAutomapDraw); // Hook the automap draw
     MemoryPatch(D2::GameDrawPatch) << CALL(_gameDraw); // Hook the game draw
     MemoryPatch(D2::oogDrawPatch) << CALL(_oogDraw); // Hook the oog draw
     MemoryPatch(D2::MultiPatch) << CALL(multi) << ASM::NOP; // Allow multiple windows open
-    MemoryPatch(D2::GameInputPatch) << CALL(_gameInput); // Intercept game input
+    MemoryPatch(D2::ChatInputPatch) << CALL(_chatInput); // Intercept game input
     MemoryPatch(D2::FTJReducePatch) << BYTESEQ{ 0x81, 0xFE, 0xA0, 0x0F, 0x00, 0x00 }; // FTJ Patch - cmp esi, 4000
     MemoryPatch(D2::DisableBattleNetPatch) << BYTE(0xC3); // Prevent battle.net connections
     MemoryPatch(D2::EnableDebugPrint) << true; // Enable in-game debug prints

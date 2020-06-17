@@ -198,7 +198,7 @@ ASMPTR(D2CLIENT, AssignPlayer_I, 0x66200) // Updated 1.14d //00466200-BASE
 
 // ASMPTR(D2CLIENT, TestPvpFlag_I, 0x6A720) //6FB1A720 - Fastcall now
 
-ASMPTR(D2CLIENT, InputCall_I, 0x787B0) // Updated 1.14d //004787B0-BASE
+FUNCPTR(D2CLIENT, ChatInput, void __fastcall, (wchar_t* wMsg), 0x787B0) // Updated 1.14d //004787B0-BASE
 
 ASMPTR(D2CLIENT, Say_I, 0x7CBDA) // Updated 1.14d //0047CBDA-BASE
 
@@ -324,7 +324,8 @@ FUNCPTR(D2GFX, DrawLine, void __stdcall, (int X1, int Y1, int X2, int Y2, DWORD 
 FUNCPTR(D2GFX, DrawAutomapCell2, void __stdcall, (D2::Types::CellContext* context, DWORD xpos, DWORD ypos, DWORD bright2, DWORD bright, BYTE* coltab),
 0xF6480)                                            // Updated 1.14d //004F6480-BASE
 FUNCPTR(D2GFX, GetHwnd, HWND __stdcall, (void), 0xF59A0)    // Updated 1.14d //004F59A0-BASE
-FUNCPTR(D2GFX, GetScreenSize, DWORD __stdcall, (), 0xF5160) // Updated 1.14d //004F5160-BASE
+FUNCPTR(D2GFX, GetScreenMode, DWORD __stdcall, (), 0xF5160) // Updated 1.14d //004F5160-BASE
+FUNCPTR(D2GFX, GetScreenModeSize, void __stdcall, (int nResolutionMode, int* pResRightMax, int* pResBottomMax), 0xF5570) // NEW 1.14d //004F5570-BASE
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // D2Multi Functions
@@ -421,25 +422,27 @@ VARPTR(STORM, WindowHandlers, D2::Types::WindowHandlerHashTable, 0x379300)  // U
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 FUNCPTR(D2GAME, Rand, DWORD __fastcall, (DWORD* seed), 0x5C370) // Updated 1.14d //0045C370-BASE
+FUNCPTR(D2GAME, exit0, DWORD __fastcall, (), 0x576F)            // NEW 1.14d //0040576F-BASE
 
-FUNCPTR(D2GAME, exit0, DWORD __fastcall, (), 0x576F) // NEW 1.14d //0040576F-BASE
+////////////////////////////////////////////////////////////////////////////////////////////////
+// New Finds
+////////////////////////////////////////////////////////////////////////////////////////////////
 
-VARPTR(Base, CurrentWaypointMenuTab, DWORD, 0x3BF086)
-VARPTR(Base, DrawFPS, BOOL, 0x3BB3A4)
+VARPTR(Base, CurrentWaypointMenuTab, DWORD, 0x3BF086)           //007BF086-BASE
+VARPTR(Base, DrawFPS, BOOL, 0x3BB3A4)                           //007BB3A4-BASE
 
-FUNCPTR(Base, DrawAutomap, void __fastcall, (), 0x5ad60) // NEW 1.14d //0045ad60-BASE
-
-ASMPTR(Base, GameLoopPatch, 0x51C2A)
-ASMPTR(Base, oogLoopPatch, 0xFA663)
-ASMPTR(Base, GameAutomapDrawPatch, 0x56fa5)
-ASMPTR(Base, GameDrawPatch, 0x4CB14)
-ASMPTR(Base, oogDrawPatch, 0xF9A0D)
-ASMPTR(Base, MultiPatch, 0xF5623)
-ASMPTR(Base, GameInputPatch, 0x7C89D)
-ASMPTR(Base, FTJReducePatch, 0x4EF28)
-ASMPTR(Base, DisableBattleNetPatch, 0x3BF60)
-ASMPTR(Base, EnableDebugPrint, 0x4846DC)
-
-FUNCPTR(D2GFX, GetScreenModeSize, void __stdcall, (int nResolutionMode, int* pResRightMax, int* pResBottomMax), 0xF5570) // NEW 1.14d //004F5570-BASE
-
-ASMPTR(Base, NullDebugPrintf, 0x11A480)
+FUNCPTR(Base, DrawAutomap, void __fastcall, (), 0x5ad60)        // NEW 1.14d //0045ad60-BASE
+ASMPTR(Base, GameLoopPatch, 0x51C2A)                            //00451C2A-BASE
+ASMPTR(Base, oogLoopPatch, 0xFA663)                             //004FA663-BASE
+ASMPTR(Base, GameAutomapDrawPatch, 0x56fa5)                     //00456FA5-BASE
+ASMPTR(Base, GameDrawPatch, 0x4CB14)                            //0044CB14-BASE
+ASMPTR(Base, oogDrawPatch, 0xF9A0D)                             //004F9A0D-BASE
+ASMPTR(Base, MultiPatch, 0xF5623)                               //004F5623-BASE
+ASMPTR(Base, ChatInputPatch, 0x7C89D)                           //0047C89D-BASE
+ASMPTR(Base, FTJReducePatch, 0x4EF28)                           //0044EF28-BASE
+ASMPTR(Base, DisableBattleNetPatch, 0x3BF60)                    //0043BF60-BASE
+ASMPTR(Base, EnableDebugPrint, 0x4846DC)                        //008846DC-BASE
+ASMPTR(Base, NullDebugPrintf, 0x11A480)                         //0051A480-BASE
+ASMPTR(Base, PreDrawUnitsPatch, 0x76ce1)                        //00476ce1-BASE
+ASMPTR(Base, SomethingBeforeDrawUnits, 0x73c00)                 //00473c00-BASE
+ASMPTR(Base, DrawWorldEndPatch, 0x76d31)                        //00476d31-BASE

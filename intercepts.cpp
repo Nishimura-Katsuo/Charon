@@ -3,20 +3,25 @@
  */
 #include "headers/common.h"
 
-void __declspec(naked) _gameInput() {
+DWORD __fastcall show(DWORD a) {
+	std::cout << "ret: " << a << std::endl;
+	return a;
+}
+
+void __declspec(naked) _chatInput() {
 	__asm {
 		pushad
 		mov ecx, ebx
-		call gameInput
+		call chatInput
 		cmp eax, 0
 		popad
 		je BlockIt
-		call D2::InputCall_I
+		call D2::ChatInput
 		ret
 
-		BlockIt:
+		BlockIt :
 		xor eax, eax
-		ret
+			ret
 	}
 }
 
@@ -24,8 +29,8 @@ HMODULE __stdcall multi(LPSTR Class, LPSTR Window) {
     return 0;
 }
 
-void oogDraw();
-void gameDraw();
+void oogPostDraw();
+void gamePostDraw();
 
 namespace D2 {
 	int ScreenWidth = 0, ScreenHeight = 0;
@@ -33,16 +38,16 @@ namespace D2 {
 
 // Since we patch to override DrawSprites, we need to call it ourselves.
 void _oogDraw() {
-	D2::GetScreenModeSize(D2::GetScreenSize(), &D2::ScreenWidth, &D2::ScreenHeight);
+	D2::GetScreenModeSize(D2::GetScreenMode(), &D2::ScreenWidth, &D2::ScreenHeight);
 	DWORD old = D2::SetFont(DEFAULT_FONT);
-	oogDraw();
+	oogPostDraw();
 	D2::SetFont(old);
 	D2::DrawSprites();
 }
 
 void _gameDraw() {
 	DWORD old = D2::SetFont(DEFAULT_FONT);
-	gameDraw();
+	gamePostDraw();
 	D2::SetFont(old);
 }
 
@@ -65,11 +70,19 @@ void _throttle() {
 
 void gameAutomapPreDraw();
 void gameAutomapPostDraw();
+void gameUnitPreDraw();
 
 void _gameAutomapDraw() {
 	gameAutomapPreDraw();
 	D2::DrawAutomap();
 	gameAutomapPostDraw();
+}
+
+void _preDrawUnitsPatch() {
+	gameUnitPreDraw();
+	__asm {
+		call D2::SomethingBeforeDrawUnits
+	}
 }
 
 // This is based on the actual source for printf... uses varargs.
