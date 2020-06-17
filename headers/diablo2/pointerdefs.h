@@ -442,7 +442,9 @@ ASMPTR(Base, ChatInputPatch, 0x7C89D)                           //0047C89D-BASE
 ASMPTR(Base, FTJReducePatch, 0x4EF28)                           //0044EF28-BASE
 ASMPTR(Base, DisableBattleNetPatch, 0x3BF60)                    //0043BF60-BASE
 ASMPTR(Base, EnableDebugPrint, 0x4846DC)                        //008846DC-BASE
+ASMPTR(Base, CustomDebugPrintPatch, 0x144393)                   //00544393-BASE
 ASMPTR(Base, NullDebugPrintf, 0x11A480)                         //0051A480-BASE
 ASMPTR(Base, PreDrawUnitsPatch, 0x76ce1)                        //00476ce1-BASE
 ASMPTR(Base, SomethingBeforeDrawUnits, 0x73c00)                 //00473c00-BASE
 ASMPTR(Base, DrawWorldEndPatch, 0x76d31)                        //00476d31-BASE
+FUNCPTR(Base, GetUnitName, wchar_t* __fastcall, (D2::Types::UnitAny *unit), 0x64a60)                             //00464a60-BASE
