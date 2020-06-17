@@ -95,7 +95,7 @@ int __stdcall printf_newline(const char* format, ...) {
 	va_end(arg);
 
 	// We want to force a newline after debug prints :)
-	puts("\n");
+	puts("");
 
 	return done;
 }

@@ -62,17 +62,36 @@ void gameUnitPreDraw() {
     // Could use this to draw tile markers or something.
 }
 
+POINT unitScreenPos(D2::Types::UnitAny* unit) {
+    // Turn this into a stat overlay with flags, etc for debugging
+    POINT pos{ unit->pPath->xPos, unit->pPath->yPos }, offset{ unit->pPath->xOffset, unit->pPath->yOffset };
+
+    WorldToScreen(&pos.x, &pos.y);
+    WorldToScreen(&offset.x, &offset.y);
+
+    pos.x += offset.x >> 16;
+    pos.y += offset.y >> 16;
+
+    return pos;
+}
+
 void gameUnitPostDraw() {
     // Server side tracks enemies
     // Needs filtering
     BYTE d = 1;
+    wchar_t msg[255];
     for (int c = 0; c < 128; c++) {
         for (D2::Types::UnitAny* unit = D2::ServerSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
-            if (isEnemy(unit)) {
+            if (unit->pPath) {
                 // Turn this into a stat overlay with flags, etc for debugging
-                long sX = unit->pPath->xPos, sY = unit->pPath->yPos;
-                WorldToScreen(&sX, &sY);
-                D2::DrawRectangle(sX - 8, sY - 8, sX + 8, sY + 8, 10, 1);
+                POINT pos = unitScreenPos(unit);
+
+                swprintf_s(msg, L"%s", D2::GetUnitName(unit));
+                DWORD fontNum = 12, width = 0, height = 0;
+                D2::SetFont(fontNum);
+                height = D2::GetTextSize(msg, &width, &fontNum);
+                D2::DrawRectangle(pos.x - 2, pos.y - 2, pos.x + 2, pos.y + 2, 131, 0xFF);
+                D2::DrawGameText(msg, pos.x - (width >> 1), pos.y + height, 0, 0);
             }
         }
     }
@@ -146,6 +165,10 @@ BOOL __fastcall chatInput(wchar_t* wMsg) {
     return TRUE;
 }
 
+void __fastcall myDebugPrint(DWORD unk, char* szMsg, DWORD color) {
+    cout << (LPVOID)unk << " " << szMsg;
+}
+
 void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     // override the entire sleepy section - 32 bytes long
     MemoryPatch(D2::GameLoopPatch)
@@ -167,9 +190,11 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::MultiPatch) << CALL(multi) << ASM::NOP; // Allow multiple windows open
     MemoryPatch(D2::ChatInputPatch) << CALL(_chatInput); // Intercept game input
     MemoryPatch(D2::FTJReducePatch) << BYTESEQ{ 0x81, 0xFE, 0xA0, 0x0F, 0x00, 0x00 }; // FTJ Patch - cmp esi, 4000
-    MemoryPatch(D2::DisableBattleNetPatch) << BYTE(0xC3); // Prevent battle.net connections
+    //MemoryPatch(D2::DisableBattleNetPatch) << BYTE(0xC3); // Prevent battle.net connections
     MemoryPatch(D2::EnableDebugPrint) << true; // Enable in-game debug prints
     MemoryPatch(D2::NullDebugPrintf) << JUMP(printf_newline); // Enable even more console debug prints
+
+    MemoryPatch(D2::CustomDebugPrintPatch) << CALL(myDebugPrint);
 
     *D2::NoPickUp = true;
 
