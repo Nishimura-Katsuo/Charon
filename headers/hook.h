@@ -22,6 +22,8 @@ public:
     friend class MemoryPatch;
 };
 
+typedef std::vector<BYTE> BYTESEQ;
+
 class SKIP {
     size_t length;
 public:
@@ -76,4 +78,5 @@ public:
     MemoryPatch& operator << (const REWIND offset);
     MemoryPatch& operator << (const CALL call);
     MemoryPatch& operator << (const JUMP jump);
+    MemoryPatch& operator << (BYTESEQ bytes);
 };

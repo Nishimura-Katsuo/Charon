@@ -24,14 +24,6 @@ HMODULE __stdcall multi(LPSTR Class, LPSTR Window) {
     return 0;
 }
 
-void __declspec(naked) FTJReduce() {
-	__asm
-	{
-		cmp esi, 4000;
-		ret;
-	}
-}
-
 void oogDraw();
 void gameDraw();
 
@@ -80,7 +72,7 @@ void _gameAutomapDraw() {
 	gameAutomapPostDraw();
 }
 
-// This is based on the actual source for print... uses varargs.
+// This is based on the actual source for printf... uses varargs.
 int __stdcall printf_newline(const char* format, ...) {
 	va_list arg;
 	int done;

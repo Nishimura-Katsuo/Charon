@@ -149,7 +149,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::oogDrawPatch) << CALL(_oogDraw); // Hook the oog draw
     MemoryPatch(D2::MultiPatch) << CALL(multi) << ASM::NOP; // Allow multiple windows open
     MemoryPatch(D2::GameInputPatch) << CALL(_gameInput); // Intercept game input
-    MemoryPatch(D2::FTJReducePatch) << CALL(FTJReduce) << ASM::NOP; // Reduce Failed To Join (QoL fix)
+    MemoryPatch(D2::FTJReducePatch) << BYTESEQ{ 0x81, 0xFE, 0xA0, 0x0F, 0x00, 0x00 }; // FTJ Patch - cmp esi, 4000
     MemoryPatch(D2::DisableBattleNetPatch) << BYTE(0xC3); // Prevent battle.net connections
     MemoryPatch(D2::EnableDebugPrint) << true; // Enable in-game debug prints
     MemoryPatch(D2::NullDebugPrintf) << JUMP(printf_newline); // Enable even more console debug prints
