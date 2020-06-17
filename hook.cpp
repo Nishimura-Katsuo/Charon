@@ -1,6 +1,11 @@
 #include "headers/hook.h"
 #include <iostream>
 
+
+DWORD calcRelAddr(DWORD instructionAddress, DWORD targetAddress, DWORD instructionLength) {
+    return targetAddress - instructionAddress - instructionLength;
+}
+
 template <class T>
 DWORD SetData(DWORD pAddr, const T& value) {
     DWORD dwOld, dwSize = sizeof(T);
@@ -15,13 +20,13 @@ DWORD SetData(DWORD pAddr, const T& value) {
     return FALSE;
 }
 
-DWORD PatchCall(BYTE instruction, DWORD pAddr, LPVOID pFunc) {
-    DWORD dwOld, dwFunc = (DWORD)pFunc - (pAddr + 5), dwLen = sizeof(BYTE) + sizeof(DWORD);
+DWORD PatchCall(BYTE instruction, DWORD pAddr, DWORD pFunc) {
+    DWORD dwOld, dwLen = sizeof(BYTE) + sizeof(DWORD);
 
     if (VirtualProtect((LPVOID)pAddr, dwLen, PAGE_READWRITE, &dwOld)) {
         BYTE* bytes = (BYTE*)pAddr;
         bytes[0] = instruction;
-        *(DWORD*)(bytes + 1) = dwFunc;
+        *(DWORD*)(bytes + 1) = calcRelAddr(pAddr, pFunc, dwLen);
         VirtualProtect((LPVOID)pAddr, dwLen, dwOld, &dwOld);
         return dwLen;
     }
@@ -103,11 +108,26 @@ MemoryPatch& MemoryPatch::operator << (const REWIND offset) {
 }
 
 MemoryPatch& MemoryPatch::operator << (const CALL call) {
-    pAddr += PatchCall(ASM::CALL, pAddr, call.pFunc);
+    pAddr += PatchCall(ASM::CALL, pAddr, (DWORD)call.pFunc);
     return *this;
 }
 
 MemoryPatch& MemoryPatch::operator << (const JUMP jump) {
-    pAddr += PatchCall(ASM::JMP, pAddr, jump.pFunc);
+    pAddr += PatchCall(ASM::JMP, pAddr, (DWORD)jump.pFunc);
+    return *this;
+}
+
+MemoryPatch& MemoryPatch::operator << (BYTESEQ bytes) {
+    DWORD dwOld, dwSize = bytes.size();
+
+    if (VirtualProtect((LPVOID)pAddr, dwSize, PAGE_READWRITE, &dwOld)) {
+        BYTE* addr = (BYTE*)pAddr;
+        for (size_t c = 0; c < dwSize; c++) {
+            addr[c] = bytes[c];
+        }
+        VirtualProtect((LPVOID)pAddr, dwSize, dwOld, &dwOld);
+        pAddr += dwSize;
+    }
+
     return *this;
 }
