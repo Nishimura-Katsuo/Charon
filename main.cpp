@@ -89,8 +89,12 @@ bool isFriendly(D2::Types::UnitAny* unit) {
     return D2::GetUnitStat(unit, 172, 0) == 2;
 }
 
-bool isEnemy(D2::Types::UnitAny *unit) {
-    return unitHP(unit) > 0 && !isFriendly(unit);
+bool isEnemy(D2::Types::UnitAny* unit) {
+    return D2::GetUnitStat(unit, 172, 0) == 0;
+}
+
+bool isHostile(D2::Types::UnitAny *unit) {
+    return unitHP(unit) > 0 && isEnemy(unit);
 }
 
 POINT unitScreenPos(D2::Types::UnitAny* unit) {
@@ -164,12 +168,11 @@ void gameUnitPostDraw() {
                     POINT pos = unitScreenPos(unit);
 
                     if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight) {
-
-                        swprintf_s(msg, L"%s", D2::GetUnitName(unit));
+                        swprintf_s(msg, L"Alignment: %d\n%s", D2::GetUnitStat(unit, 172, 0), D2::GetUnitName(unit));
                         DWORD fontNum = 12, width = 0, height = 0;
                         D2::SetFont(fontNum);
                         height = D2::GetTextSize(msg, &width, &fontNum);
-                        D2::DrawGameText(msg, pos.x - (width >> 1), pos.y + height, 0, 0);
+                        D2::DrawGameText(msg, pos.x - (width >> 1), pos.y + height, 0, 1);
                     }
                 }
             }
@@ -196,7 +199,7 @@ void gameAutomapPostDraw() {
     d = 1;
     for (int c = 0; c < 128; c++) {
         for (D2::Types::UnitAny* unit = D2::ServerSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
-            if (isEnemy(unit)) {
+            if (isHostile(unit)) {
                 DWORD color = 10;
 
                 if (unit->pMonsterData->fBoss) {
