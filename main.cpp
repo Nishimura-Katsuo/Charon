@@ -8,6 +8,8 @@ using std::wcout;
 using std::cout;
 using std::endl;
 
+bool drawDebug = true;
+
 void drawBranding(bool inGame) {
     WCHAR msgtext[] = L"Charon v0.1";
     DWORD width = 0, height = 0, fileno = 1;
@@ -23,6 +25,11 @@ void WorldToScreen(long *x, long *y) {
     *y -= D2::GetMouseYOffset();
 }
 
+POINT WorldToScreen(POINT point) {
+    WorldToScreen(&point.x, &point.y);
+    return point;
+}
+
 void ScreenToWorld(long* x, long* y) {
     D2::AbsScreenToMap(x, y);
     *x += D2::GetMouseXOffset();
@@ -34,6 +41,11 @@ void WorldToAutomap(long* x, long* y) {
     D2::MapToAbsScreen(x, y);
     *x = *x / *D2::Divisor - D2::Offset->x + 8;
     *y = *y / *D2::Divisor - D2::Offset->y - 8;
+}
+
+POINT WorldToAutomap(POINT point) {
+    WorldToAutomap(&point.x, &point.y);
+    return point;
 }
 
 void DrawMinimapLine(long x1, long y1, long x2, long y2, DWORD dwColor = 0x62, DWORD dwOpacity = 0xFF) {
@@ -53,13 +65,32 @@ void DrawMinimapX(long x, long y, DWORD dwColor = 0x62, DWORD dwOpacity = 0xFF, 
     DrawMinimapLine(x - size, y, x + size, y, dwColor, dwOpacity);
 }
 
-bool isEnemy(D2::Types::UnitAny *unit) {
-    DWORD hp = D2::GetUnitStat(unit, 6, 0) >> 8, alignment = D2::GetUnitStat(unit, 172, 0);
-    return hp > 0 && alignment != 2;
+void DrawAutomapLine(POINT p1, POINT p2, DWORD dwColor, DWORD dwOpacity) {
+    p1 = WorldToAutomap(p1);
+    p2 = WorldToAutomap(p2);
+    D2::DrawLine(p1.x, p1.y, p2.x, p2.y, dwColor, dwOpacity);
 }
 
-void gameUnitPreDraw() {
-    // Could use this to draw tile markers or something.
+void DrawWorldLine(POINT p1, POINT p2, DWORD dwColor, DWORD dwOpacity) {
+    p1 = WorldToScreen(p1);
+    p2 = WorldToScreen(p2);
+    D2::DrawLine(p1.x, p1.y, p2.x, p2.y, dwColor, dwOpacity);
+}
+
+void DrawScreenLine(POINT p1, POINT p2, DWORD dwColor, DWORD dwOpacity) {
+    D2::DrawLine(p1.x, p1.y, p2.x, p2.y, dwColor, dwOpacity);
+}
+
+DWORD unitHP(D2::Types::UnitAny* unit) {
+    return D2::GetUnitStat(unit, 6, 0) >> 8;
+}
+
+bool isFriendly(D2::Types::UnitAny* unit) {
+    return D2::GetUnitStat(unit, 172, 0) == 2;
+}
+
+bool isEnemy(D2::Types::UnitAny *unit) {
+    return unitHP(unit) > 0 && !isFriendly(unit);
 }
 
 POINT unitScreenPos(D2::Types::UnitAny* unit) {
@@ -70,28 +101,77 @@ POINT unitScreenPos(D2::Types::UnitAny* unit) {
     WorldToScreen(&offset.x, &offset.y);
 
     pos.x += offset.x >> 16;
-    pos.y += offset.y >> 16;
+    pos.y += (offset.y >> 16) + 6;
 
     return pos;
+}
+
+
+void gameUnitPreDraw() {
+    // Could use this to draw tile markers or something.
+    // Server side tracks enemies
+    // Needs filtering
+
+    if (drawDebug) {
+        wchar_t msg[255];
+        POINT pos{ D2::PlayerUnit[0]->pPath->xPos, D2::PlayerUnit[0]->pPath->yPos };
+        DWORD color = 28;
+        swprintf_s(msg, L"Using color: %d", color);
+        D2::SetFont(0);
+        D2::DrawGameText(msg, 0, 16, 0, 0);
+
+        for (int x = -16; x <= 16; x++) {
+            for (int y = -16; y <= 16; y++) {
+                if (x < 16) {
+                    DrawWorldLine({ pos.x + x, pos.y + y }, { pos.x + x + 1, pos.y + y }, color, 1);
+                }
+                if (y < 16) {
+                    DrawWorldLine({ pos.x + x, pos.y + y }, { pos.x + x, pos.y + y + 1 }, color, 1);
+                }
+            }
+        }
+
+        BYTE d = 1;
+        for (int c = 0; c < 128; c++) {
+            for (D2::Types::UnitAny* unit = D2::ServerSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
+                if (unit->pPath) {
+                    // Turn this into a stat overlay with flags, etc for debugging
+                    POINT pos = unitScreenPos(unit);
+
+                    if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight) {
+                        if (unitHP(unit) > 0) {
+                            POINT target = WorldToScreen({ unit->pPath->xTarget, unit->pPath->yTarget });
+                            target.y += 12;
+                            DrawScreenLine(pos, target, 0x99, 1);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void gameUnitPostDraw() {
     // Server side tracks enemies
     // Needs filtering
-    BYTE d = 1;
-    wchar_t msg[255];
-    for (int c = 0; c < 128; c++) {
-        for (D2::Types::UnitAny* unit = D2::ServerSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
-            if (unit->pPath) {
-                // Turn this into a stat overlay with flags, etc for debugging
-                POINT pos = unitScreenPos(unit);
+    if (drawDebug) {
+        BYTE d = 1;
+        wchar_t msg[255];
+        for (int c = 0; c < 128; c++) {
+            for (D2::Types::UnitAny* unit = D2::ServerSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
+                if (unit->pPath) {
+                    // Turn this into a stat overlay with flags, etc for debugging
+                    POINT pos = unitScreenPos(unit);
 
-                swprintf_s(msg, L"%s", D2::GetUnitName(unit));
-                DWORD fontNum = 12, width = 0, height = 0;
-                D2::SetFont(fontNum);
-                height = D2::GetTextSize(msg, &width, &fontNum);
-                D2::DrawRectangle(pos.x - 2, pos.y - 2, pos.x + 2, pos.y + 2, 131, 0xFF);
-                D2::DrawGameText(msg, pos.x - (width >> 1), pos.y + height, 0, 0);
+                    if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight) {
+
+                        swprintf_s(msg, L"%s", D2::GetUnitName(unit));
+                        DWORD fontNum = 12, width = 0, height = 0;
+                        D2::SetFont(fontNum);
+                        height = D2::GetTextSize(msg, &width, &fontNum);
+                        D2::DrawGameText(msg, pos.x - (width >> 1), pos.y + height, 0, 0);
+                    }
+                }
             }
         }
     }
@@ -159,6 +239,7 @@ void oogLoop() {
 
 BOOL __fastcall chatInput(wchar_t* wMsg) {
     if (wMsg[0] == L'~') {
+        drawDebug = !drawDebug;
         return FALSE;
     }
 
