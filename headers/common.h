@@ -10,6 +10,8 @@
 #include <string>
 #include <unordered_map>
 #include <functional>
+#include <sstream>
+#include <iomanip>
 
 #include "../headers/diablo2/pointers.h"
 #include "../headers/hook.h"
@@ -27,7 +29,8 @@ namespace D2 {
     const DWORD DEFAULT_SCREEN_WIDTH = 800, DEFAULT_SCREEN_HEIGHT = 600;
 }
 
-typedef std::function<BOOL(wchar_t*)> InputCallback;
+typedef std::wstringstream& InputStream;
+typedef std::function<BOOL(InputStream)> InputCallback;
 typedef std::unordered_map<std::wstring, InputCallback> InputCallbackMap;
 typedef InputCallbackMap::iterator InputMapIterator;
 typedef std::pair<std::wstring, InputCallback> InputCallbackPair;

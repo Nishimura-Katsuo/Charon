@@ -239,9 +239,7 @@ ASMPTR(D2CLIENT, SendPacket_II, 0x12AE62)   // Updated **NEW** 1.14d //0052AE62-
 
 FUNCPTR(D2COMMON, InitLevel, void __stdcall, (D2::Types::Level* pLevel), 0x2424A0)       // Updated 1.14d //006424A0-BASE
 FUNCPTR(D2COMMON, UnloadAct, unsigned __stdcall, (D2::Types::Act* pAct), 0x21AFD3)       // Updated 1.14d //0061AFD3-BASE
-FUNCPTR(D2COMMON, LoadAct, D2::Types::Act* __stdcall,
-(DWORD ActNumber, DWORD MapId, DWORD Unk, DWORD Unk_2, DWORD Unk_3, DWORD Unk_4, DWORD TownLevelId, DWORD Func_1, DWORD Func_2),
-0x2194A0) // Updated 1.14d //006194A0-BASE
+FUNCPTR(D2COMMON, LoadAct, D2::Types::Act* __stdcall, (DWORD ActNumber, DWORD MapId, DWORD Unk, DWORD Unk_2, DWORD Unk_3, DWORD Unk_4, DWORD TownLevelId, DWORD Func_1, DWORD Func_2), 0x2194A0) // Updated 1.14d //006194A0-BASE
 
 FUNCPTR(D2COMMON, GetLevelText, D2::Types::LevelTxt* __stdcall, (DWORD levelno), 0x21DB70) // Updated 1.14d //0061DB70-BASE
 FUNCPTR(D2COMMON, GetObjectText, D2::Types::ObjectTxt* __stdcall, (DWORD objno), 0x240E90) // Updated 1.14d //00640E90-BASE
