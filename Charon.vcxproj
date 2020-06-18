@@ -151,11 +151,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="hook.cpp" />
-    <ClCompile Include="intercepts.cpp" />
+    <ClCompile Include="framework\dllmain.cpp" />
+    <ClCompile Include="framework\hook.cpp" />
+    <ClCompile Include="framework\intercepts.cpp" />
+    <ClCompile Include="framework\pointers.cpp" />
+    <ClCompile Include="framework\utilities.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="pointers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\common.h" />
@@ -163,6 +164,7 @@
     <ClInclude Include="headers\diablo2\intercepts.h" />
     <ClInclude Include="headers\diablo2\pointerdefs.h" />
     <ClInclude Include="headers\diablo2\pointers.h" />
+    <ClInclude Include="headers\diablo2\utilities.h" />
     <ClInclude Include="headers\hook.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
