@@ -99,6 +99,9 @@ VARPTR(D2CLIENT, AutomapOn, DWORD, 0x3A27E8)            // Updated 1.14d //007A2
 VARPTR(D2CLIENT, Offset, POINT, 0x3A5198)               // Updated 1.14d //007A5198-BASE
 VARPTR(D2CLIENT, AutomapLayer, D2::Types::AutomapLayer*, 0x3A5164) // Updated 1.14d //007A5164-BASE
 
+VARPTR(D2CLIENT, ShakeX, int, 0x3B9538) //007B9538-BASE
+VARPTR(D2CLIENT, ShakeY, int, 0x3B8D20) //007B8D20-BASE
+
 // VARPTR(D2CLIENT, MercStrIndex, WORD, 0x325494) //Updated 1.14d //00725494-BASE
 VARPTR(D2CLIENT, MercReviveCost, DWORD, 0x3C0DD0) // Updated 1.14d //007C0DD0-BASE
 
@@ -447,4 +450,6 @@ ASMPTR(Base, NullDebugPrintf, 0x11A480)                         //0051A480-BASE
 ASMPTR(Base, PreDrawUnitsPatch, 0x76ce1)                        //00476ce1-BASE
 ASMPTR(Base, SomethingBeforeDrawUnits, 0x73c00)                 //00473c00-BASE
 ASMPTR(Base, DrawWorldEndPatch, 0x76d31)                        //00476d31-BASE
+ASMPTR(Base, ShakePatch, 0x76D40)                         //00476D40-BASE
+
 FUNCPTR(Base, GetUnitName, wchar_t* __fastcall, (D2::Types::UnitAny *unit), 0x64a60)                             //00464a60-BASE
