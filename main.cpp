@@ -199,6 +199,8 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
 
     MemoryPatch(D2::CustomDebugPrintPatch) << CALL(CustomDebugPrint);
 
+    MemoryPatch(D2::ShakePatch) << BYTE(0xC3);
+
     *D2::NoPickUp = true;
 
     ChatInputCallbacks[L"~debug"] = [](wchar_t* wMsg) -> BOOL {
