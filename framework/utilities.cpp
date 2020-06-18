@@ -142,6 +142,18 @@ void RevealRoom(D2::Types::Room2* room2) {
     }
 }
 
+D2::Types::Room2* GetRoomTileOtherRoom2(D2::Types::Room2* room2, DWORD roomtileno)
+{
+    D2::Types::RoomTile* roomtile = room2->pRoomTiles;
+    while (roomtile) {
+        if (*roomtile->nNum == roomtileno) {
+            return roomtile->pRoom2;
+        }
+        roomtile = roomtile->pNext;
+    }
+    return 0;
+}
+
 void RevealCurrentLevel() {
     //cout << "This feature is not implemented yet." << endl;
     
