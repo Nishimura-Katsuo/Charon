@@ -104,6 +104,56 @@ void __fastcall CustomDebugPrint(DWORD unk, char* szMsg, DWORD color) {
     std::cout << (LPVOID)unk << " " << szMsg;
 }
 
+void RevealRoom(D2::Types::Room2* room2) {
+
+    // Get room
+    D2::Types::Level* level = room2->pLevel;
+    DWORD dwLevelNo = level->dwLevelNo;
+    bool added = false;
+    bool initOtherArea = false;
+
+    // If level or room1 isnt loaded
+    if (!room2->pLevel || !room2->pRoom1) {
+        D2::AddRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, NULL);
+        added = true;
+    }
+
+    // safety check to see if its loaded now
+    if (!room2->pRoom1 || !room2->pLevel) {
+        return;
+    }
+
+    // Init the automap layer of those areas we are not at ourselfs
+    if (room2->pLevel->dwLevelNo && dwLevelNo != room2->pLevel->dwLevelNo) {
+        D2::InitAutomapLayer_I(D2::GetLayer(room2->pLevel->dwLevelNo)->nLayerNo);
+        initOtherArea = true;
+    }
+
+    D2::RevealAutomapRoom(room2->pRoom1, TRUE, *D2::AutomapLayer);
+
+    // If we added a room to reveal it, clean up
+    if (added) {
+        D2::RemoveRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, NULL);
+    }
+
+    // If we had to init another area, init our current area
+    if (initOtherArea) {
+        D2::InitAutomapLayer_I(D2::GetLayer(dwLevelNo)->nLayerNo);
+    }
+}
+
 void RevealCurrentLevel() {
-    cout << "This feature is not implemented yet." << endl;
+    //cout << "This feature is not implemented yet." << endl;
+    
+    // Only when we exists we can load stuff
+    D2::Types::UnitAny* player = D2::GetPlayerUnit();
+    if (player == nullptr) return;
+
+    // Your not in any level?
+    D2::Types::Level* level = player->pPath->pRoom1->pRoom2->pLevel;
+    if (level == nullptr) return;
+
+    for (D2::Types::Room2* room = player->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room; room = room->pRoom2Next) {
+        RevealRoom(room);
+    }
 }
