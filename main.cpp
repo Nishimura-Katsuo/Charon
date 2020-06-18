@@ -130,6 +130,34 @@ void gameAutomapPostDraw() {
             }
         }
     }
+
+    D2::Types::UnitAny* player = D2::GetPlayerUnit();
+    if (player) {
+        D2::Types::Level* level = player->pPath->pRoom1->pRoom2->pLevel;
+
+        if (level) {
+
+            // Loop trough all rooms of current lvl
+            for (D2::Types::Room2* room = player->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room; room = room->pRoom2Next) {
+
+                if (room->pPreset) {
+
+                    // Loop trough presets of current lvl
+                    for (D2::Types::PresetUnit* ps = room->pPreset; ps; ps = ps->pPresetNext) {
+
+                        int xpos = (room->dwPosX * 5) + ps->dwPosX;
+                        int ypos = (room->dwPosY * 5) + ps->dwPosY;
+
+                        //@ToDo; figure out which dots are important and which aren't
+
+                        // for now all we do is draw a green dot
+                        DrawMinimapDot(xpos, ypos, 0x83, 0xFF);
+                    }
+                }
+
+            }
+        }
+    }
 }
 
 void gamePostDraw() {
@@ -207,6 +235,8 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::NullDebugPrintf) << JUMP(printf_newline); // Enable even more console debug prints
     MemoryPatch(D2::CustomDebugPrintPatch) << CALL(CustomDebugPrint); // Allow state changes to be hooked
     MemoryPatch(D2::ShakePatch) << BYTE(0xC3); // Ignore shaking requests
+
+    
 
     *D2::NoPickUp = true;
 
