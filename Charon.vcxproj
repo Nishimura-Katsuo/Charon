@@ -151,11 +151,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="hook.cpp" />
-    <ClCompile Include="intercepts.cpp" />
+    <ClCompile Include="framework\dllmain.cpp" />
+    <ClCompile Include="framework\hook.cpp" />
+    <ClCompile Include="framework\intercepts.cpp" />
+    <ClCompile Include="framework\pointers.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="pointers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\common.h" />
