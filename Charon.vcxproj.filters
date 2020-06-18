@@ -38,16 +38,16 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pointers.cpp">
+    <ClCompile Include="framework\dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dllmain.cpp">
+    <ClCompile Include="framework\hook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="intercepts.cpp">
+    <ClCompile Include="framework\intercepts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="hook.cpp">
+    <ClCompile Include="framework\pointers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

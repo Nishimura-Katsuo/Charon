@@ -2,7 +2,7 @@
  * Most of this is copypasta from D2BS' D2Ptrs.h
  */
 
-#include "headers/diablo2/D2Structs.h"
+#include "../headers/diablo2/D2Structs.h"
 
 FUNCPTR(D2CLIENT, GetQuestInfo, void* __stdcall, (void), 0xB32D0) // Updated 1.14d //004B32D0-BASE
 
