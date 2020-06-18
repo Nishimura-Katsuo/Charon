@@ -30,7 +30,7 @@ namespace D2 {
 }
 
 typedef std::wstringstream& InputStream;
-typedef std::function<BOOL(InputStream)> InputCallback;
+typedef std::function<BOOL(std::wstring, InputStream)> InputCallback;
 typedef std::unordered_map<std::wstring, InputCallback> InputCallbackMap;
 typedef InputCallbackMap::iterator InputMapIterator;
 typedef std::pair<std::wstring, InputCallback> InputCallbackPair;
