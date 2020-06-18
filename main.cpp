@@ -169,7 +169,7 @@ BOOL __fastcall chatInput(wchar_t* wMsg) {
         std::wstringstream msg(wMsg);
         std::wstring cmd;
         msg >> cmd;
-        return ChatInputCallbacks.at(cmd)(msg); // Find the callback, and then call it.
+        return ChatInputCallbacks.at(cmd)(cmd, msg); // Find the callback, and then call it.
     }
     catch (...) {
         return TRUE; // Ignore the exception. Command not found.
@@ -210,7 +210,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
 
     *D2::NoPickUp = true;
 
-    ChatInputCallbacks[L"~toggle"] = [](InputStream wchat) -> BOOL {
+    ChatInputCallbacks[L"/toggle"] = ChatInputCallbacks[L"~toggle"] = [](std::wstring cmd, InputStream wchat) -> BOOL {
         std::wstring param;
         wchat >> param;
 
@@ -225,19 +225,19 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
             }
         }
 
-        wcout << "Usage: ~toggle param" << endl << "Example: ~toggle debug" << endl << "Available flags: debug, swatch" << endl << endl;
+        wcout << "Usage: " << cmd << " param" << endl << "Example: " << cmd << " debug" << endl << "Available flags: debug, swatch" << endl << endl;
 
         return FALSE;
     };
 
     // https://github.com/blizzhackers/d2bs/blob/6f2bc2fe658164590f3cb2196efa50acfcf154c2/Room.cpp#L35
-    ChatInputCallbacks[L"~reveal"] = [](InputStream wchat) -> BOOL {
+    ChatInputCallbacks[L"/reveal"] = ChatInputCallbacks[L"~reveal"] = [](std::wstring cmd, InputStream wchat) -> BOOL {
         cout << "Revealing automap..." << endl;
         RevealCurrentLevel();
         return FALSE;
     };
 
-    ChatInputCallbacks[L"~patch"] = [](InputStream wchat) -> BOOL {
+    ChatInputCallbacks[L"/patch"] = ChatInputCallbacks[L"~patch"] = [](std::wstring cmd, InputStream wchat) -> BOOL {
         DWORD address;
         int size;
         unsigned long long value;
@@ -288,7 +288,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
                     patch << (long long)patchdata.value;
                     break;
                 default:
-                    wcout << "Nishi, your code is stupid. Please write it correctly" << endl;
+                    wcout << "Nishi, your code is stupid. Please write it correctly." << endl;
                     return FALSE;
                 }
             }
@@ -298,7 +298,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
 
         usage:
 
-        wcout << "Usage: ~patch address data [data ...]" << endl << "Example: ~patch 7BB3A4 00000001" << endl << endl;
+        wcout << "Usage: " << cmd << " address data [data ...]" << endl << "Example: " << cmd << " 7BB3A4 00000001" << endl << endl;
 
         return FALSE;
     };
