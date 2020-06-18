@@ -8,7 +8,10 @@ using std::wcout;
 using std::cout;
 using std::endl;
 
-bool drawDebug = true;
+bool drawDebug = true, drawSwatch = false;
+wchar_t wHex[] = L"0123456789ABCDEF";
+const wchar_t* align[] = { L"Hostile", L"Neutral", L"Friendly" };
+InputCallbackMap ChatInputCallbacks;
 
 void drawBranding(bool inGame) {
     WCHAR msgtext[] = L"Charon v0.1";
@@ -18,135 +21,34 @@ void drawBranding(bool inGame) {
     D2::DrawGameText(msgtext, D2::ScreenWidth - width - 5, D2::ScreenHeight - 5, inGame ? 0 : 4, 0);
 }
 
-// We can use this to mark objects directly on the screen (could probably simulate item beams like diablo 3)
-void WorldToScreen(long *x, long *y) {
-    D2::MapToAbsScreen(x, y);
-    *x -= D2::GetMouseXOffset();
-    *y -= D2::GetMouseYOffset();
-}
-
-POINT WorldToScreen(POINT point) {
-    WorldToScreen(&point.x, &point.y);
-    return point;
-}
-
-void ScreenToWorld(long* x, long* y) {
-    D2::AbsScreenToMap(x, y);
-    *x += D2::GetMouseXOffset();
-    *y += D2::GetMouseYOffset();
-}
-
-// Handy for maphack stuff
-void WorldToAutomap(long* x, long* y) {
-    D2::MapToAbsScreen(x, y);
-    *x = *x / *D2::Divisor - D2::Offset->x + 8;
-    *y = *y / *D2::Divisor - D2::Offset->y - 8;
-}
-
-POINT WorldToAutomap(POINT point) {
-    WorldToAutomap(&point.x, &point.y);
-    return point;
-}
-
-void DrawMinimapLine(long x1, long y1, long x2, long y2, DWORD dwColor = 0x62, DWORD dwOpacity = 0xFF) {
-    WorldToAutomap(&x1, &y1);
-    WorldToAutomap(&x2, &y2);
-    D2::DrawLine(x1, y1, x2, y2, dwColor, dwOpacity);
-}
-
-void DrawMinimapDot(long x1, long y1, DWORD dwColor = 0x62, DWORD dwOpacity = 0xFF) {
-    WorldToAutomap(&x1, &y1);
-    D2::DrawLine(x1 - 1, y1, x1 + 1, y1, dwColor, dwOpacity);
-    D2::DrawLine(x1, y1 - 1, x1, y1 + 1, dwColor, dwOpacity);
-}
-
-void DrawMinimapX(long x, long y, DWORD dwColor = 0x62, DWORD dwOpacity = 0xFF, int size = 5) {
-    DrawMinimapLine(x, y - size, x, y + size, dwColor, dwOpacity);
-    DrawMinimapLine(x - size, y, x + size, y, dwColor, dwOpacity);
-}
-
-void DrawAutomapLine(POINT p1, POINT p2, DWORD dwColor, DWORD dwOpacity) {
-    p1 = WorldToAutomap(p1);
-    p2 = WorldToAutomap(p2);
-    D2::DrawLine(p1.x, p1.y, p2.x, p2.y, dwColor, dwOpacity);
-}
-
-void DrawWorldLine(POINT p1, POINT p2, DWORD dwColor, DWORD dwOpacity) {
-    p1 = WorldToScreen(p1);
-    p2 = WorldToScreen(p2);
-    D2::DrawLine(p1.x, p1.y, p2.x, p2.y, dwColor, dwOpacity);
-}
-
-void DrawScreenLine(POINT p1, POINT p2, DWORD dwColor, DWORD dwOpacity) {
-    D2::DrawLine(p1.x, p1.y, p2.x, p2.y, dwColor, dwOpacity);
-}
-
-DWORD unitHP(D2::Types::UnitAny* unit) {
-    return D2::GetUnitStat(unit, 6, 0) >> 8;
-}
-
-bool isFriendly(D2::Types::UnitAny* unit) {
-    return D2::GetUnitStat(unit, 172, 0) == 2;
-}
-
-bool isEnemy(D2::Types::UnitAny* unit) {
-    return D2::GetUnitStat(unit, 172, 0) == 0;
-}
-
-bool isHostile(D2::Types::UnitAny *unit) {
-    return unitHP(unit) > 0 && isEnemy(unit);
-}
-
-POINT unitScreenPos(D2::Types::UnitAny* unit) {
-    // Turn this into a stat overlay with flags, etc for debugging
-    POINT pos{ unit->pPath->xPos, unit->pPath->yPos }, offset{ unit->pPath->xOffset, unit->pPath->yOffset };
-
-    WorldToScreen(&pos.x, &pos.y);
-    WorldToScreen(&offset.x, &offset.y);
-
-    pos.x += offset.x >> 16;
-    pos.y += (offset.y >> 16) + 6;
-
-    return pos;
-}
-
-
 void gameUnitPreDraw() {
     // Could use this to draw tile markers or something.
     // Server side tracks enemies
     // Needs filtering
 
     if (drawDebug) {
-        wchar_t msg[255];
         POINT pos{ D2::PlayerUnit[0]->pPath->xPos, D2::PlayerUnit[0]->pPath->yPos };
-        DWORD color = 28;
-        swprintf_s(msg, L"Using color: %d", color);
-        D2::SetFont(0);
-        D2::DrawGameText(msg, 0, 16, 0, 0);
+        int gridsize = 30, color = 193;
 
-        for (int x = -16; x <= 16; x++) {
-            for (int y = -16; y <= 16; y++) {
-                if (x < 16) {
-                    DrawWorldLine({ pos.x + x, pos.y + y }, { pos.x + x + 1, pos.y + y }, color, 1);
-                }
-                if (y < 16) {
-                    DrawWorldLine({ pos.x + x, pos.y + y }, { pos.x + x, pos.y + y + 1 }, color, 1);
-                }
+        for (int x = -gridsize; x <= gridsize; x++) {
+            for (int y = -gridsize; y <= gridsize; y++) {
+                DrawWorldLine({ pos.x + x, pos.y + y }, { pos.x + x + 1, pos.y + y }, color);
+                DrawWorldLine({ pos.x + x, pos.y + y }, { pos.x + x, pos.y + y + 1 }, color);
             }
         }
 
         BYTE d = 1;
         for (int c = 0; c < 128; c++) {
             for (D2::Types::UnitAny* unit = D2::ServerSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
-                if (unit->pPath) {
+                if (unit->pPath && unitHP(unit) > 0) {
                     // Turn this into a stat overlay with flags, etc for debugging
                     POINT pos = unitScreenPos(unit);
 
                     if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight) {
-                        if (unitHP(unit) > 0) {
+                        if (unit->pPath->xTarget || unit->pPath->yTarget) {
                             POINT target = WorldToScreen({ unit->pPath->xTarget, unit->pPath->yTarget });
                             target.y += 12;
-                            DrawScreenLine(pos, target, 0x99, 1);
+                            DrawScreenLine(pos, target, 0x99);
                         }
                     }
                 }
@@ -160,7 +62,7 @@ void gameUnitPostDraw() {
     // Needs filtering
     if (drawDebug) {
         BYTE d = 1;
-        wchar_t msg[255];
+        wchar_t msg[512];
         for (int c = 0; c < 128; c++) {
             for (D2::Types::UnitAny* unit = D2::ServerSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
                 if (unit->pPath) {
@@ -168,7 +70,7 @@ void gameUnitPostDraw() {
                     POINT pos = unitScreenPos(unit);
 
                     if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight) {
-                        swprintf_s(msg, L"Alignment: %d\n%s", D2::GetUnitStat(unit, 172, 0), D2::GetUnitName(unit));
+                        swprintf_s(msg, L"%s\n%s\n%s", (isAttackable(unit) ? L"Combat" : L"Non-Combat"), align[D2::GetUnitStat(unit, 172, 0)], D2::GetUnitName(unit));
                         DWORD fontNum = 12, width = 0, height = 0;
                         D2::SetFont(fontNum);
                         height = D2::GetTextSize(msg, &width, &fontNum);
@@ -199,23 +101,28 @@ void gameAutomapPostDraw() {
     d = 1;
     for (int c = 0; c < 128; c++) {
         for (D2::Types::UnitAny* unit = D2::ServerSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
-            if (isHostile(unit)) {
+            if (isHostile(unit) && unitHP(unit) > 0) {
                 DWORD color = 10;
 
-                if (unit->pMonsterData->fBoss) {
-                    color = 12;
-                }
-                else if (unit->pMonsterData->fChamp) {
-                    color = 12;
-                }
-                else if (unit->pMonsterData->fMinion) {
-                    color = 12;
-                }
-                else if (unit->pMonsterData->fUnk) {
-                    color = 13;
+                if (isAttackable(unit)) {
+                    if (unit->pMonsterData->fBoss) {
+                        color = 12;
+                    }
+                    else if (unit->pMonsterData->fChamp) {
+                        color = 12;
+                    }
+                    else if (unit->pMonsterData->fMinion) {
+                        color = 12;
+                    }
+                    else if (unit->pMonsterData->fUnk) {
+                        color = 13;
+                    }
+                    else {
+                        color = 10;
+                    }
                 }
                 else {
-                    color = 10;
+                    color = 28;
                 }
 
                 DrawMinimapX(unit->pPath->xPos, unit->pPath->yPos, color);
@@ -226,6 +133,22 @@ void gameAutomapPostDraw() {
 
 void gamePostDraw() {
     drawBranding(true);
+    DWORD fontnum = 8, height, width;
+    D2::SetFont(fontnum);
+    if (drawSwatch) {
+        wchar_t msg[3] = { 0 };
+        int color, gridsize = 24;
+        for (int x = 0; x < 32; x++) {
+            for (int y = 0; y < 8; y++) {
+                color = (x << 3) | y;
+                D2::DrawRectangle(x * gridsize, y * gridsize, x * gridsize + gridsize, y * gridsize + gridsize, color, 0xFF);
+                msg[0] = wHex[color >> 4];
+                msg[1] = wHex[color & 15];
+                height = D2::GetTextSize(msg, &width, &fontnum);
+                D2::DrawGameText(msg, x * gridsize + (gridsize - width) / 2, (y + 1) * gridsize, 0, 0);
+            }
+        }
+    }
 }
 
 void gameLoop() {
@@ -241,16 +164,12 @@ void oogLoop() {
 }
 
 BOOL __fastcall chatInput(wchar_t* wMsg) {
-    if (wMsg[0] == L'~') {
-        drawDebug = !drawDebug;
-        return FALSE;
+    try {
+        return ChatInputCallbacks.at(wMsg)(wMsg); // Find the callback, and then call it.
     }
-
-    return TRUE;
-}
-
-void __fastcall myDebugPrint(DWORD unk, char* szMsg, DWORD color) {
-    cout << (LPVOID)unk << " " << szMsg;
+    catch (...) {
+        return TRUE; // Ignore the exception. Command not found.
+    }
 }
 
 void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
@@ -274,13 +193,38 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::MultiPatch) << CALL(multi) << ASM::NOP; // Allow multiple windows open
     MemoryPatch(D2::ChatInputPatch) << CALL(_chatInput); // Intercept game input
     MemoryPatch(D2::FTJReducePatch) << BYTESEQ{ 0x81, 0xFE, 0xA0, 0x0F, 0x00, 0x00 }; // FTJ Patch - cmp esi, 4000
-    //MemoryPatch(D2::DisableBattleNetPatch) << BYTE(0xC3); // Prevent battle.net connections
+    MemoryPatch(D2::DisableBattleNetPatch) << BYTE(0xC3); // Prevent battle.net connections
     MemoryPatch(D2::EnableDebugPrint) << true; // Enable in-game debug prints
     MemoryPatch(D2::NullDebugPrintf) << JUMP(printf_newline); // Enable even more console debug prints
 
-    MemoryPatch(D2::CustomDebugPrintPatch) << CALL(myDebugPrint);
+    MemoryPatch(D2::CustomDebugPrintPatch) << CALL(CustomDebugPrint);
+
+    MemoryPatch(D2::ShakePatch) << BYTE(0xC3);
 
     *D2::NoPickUp = true;
 
-    cout << "Charon loaded." << endl;
+    ChatInputCallbacks[L"~debug"] = [](wchar_t* wMsg) -> BOOL {
+        drawDebug = !drawDebug;
+        return FALSE;
+    };
+
+    ChatInputCallbacks[L"~swatch"] = [](wchar_t* wMsg) -> BOOL {
+        drawSwatch = !drawSwatch;
+        return FALSE;
+    };
+
+    // https://github.com/blizzhackers/d2bs/blob/6f2bc2fe658164590f3cb2196efa50acfcf154c2/Room.cpp#L35
+    ChatInputCallbacks[L"~reveal"] = [](wchar_t* wMsg) -> BOOL {
+        cout << "Revealing automap..." << endl;
+        RevealCurrentLevel();
+        return FALSE;
+    };
+
+    cout << "Charon loaded. Available commands:" << endl;
+
+    for (const InputCallbackPair& kv : ChatInputCallbacks) {
+        wcout << endl << "  " << kv.first;
+    }
+
+    cout << endl << endl;
 }
