@@ -7,6 +7,7 @@
 using std::wcout;
 using std::cout;
 using std::endl;
+using std::hex;
 
 bool drawDebug = true, drawSwatch = false;
 wchar_t wHex[] = L"0123456789ABCDEF";
@@ -165,12 +166,20 @@ void oogLoop() {
 
 BOOL __fastcall chatInput(wchar_t* wMsg) {
     try {
-        return ChatInputCallbacks.at(wMsg)(wMsg); // Find the callback, and then call it.
+        std::wstringstream msg(wMsg);
+        std::wstring cmd;
+        msg >> cmd;
+        return ChatInputCallbacks.at(cmd)(msg); // Find the callback, and then call it.
     }
     catch (...) {
         return TRUE; // Ignore the exception. Command not found.
     }
 }
+
+struct DeferredPatch {
+    int size;
+    unsigned long long value;
+};
 
 void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     // override the entire sleepy section - 32 bytes long
@@ -196,27 +205,101 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::DisableBattleNetPatch) << BYTE(0xC3); // Prevent battle.net connections
     MemoryPatch(D2::EnableDebugPrint) << true; // Enable in-game debug prints
     MemoryPatch(D2::NullDebugPrintf) << JUMP(printf_newline); // Enable even more console debug prints
-
-    MemoryPatch(D2::CustomDebugPrintPatch) << CALL(CustomDebugPrint);
-
-    MemoryPatch(D2::ShakePatch) << BYTE(0xC3);
+    MemoryPatch(D2::CustomDebugPrintPatch) << CALL(CustomDebugPrint); // Allow state changes to be hooked
+    MemoryPatch(D2::ShakePatch) << BYTE(0xC3); // Ignore shaking requests
 
     *D2::NoPickUp = true;
 
-    ChatInputCallbacks[L"~debug"] = [](wchar_t* wMsg) -> BOOL {
-        drawDebug = !drawDebug;
-        return FALSE;
-    };
+    ChatInputCallbacks[L"~toggle"] = [](InputStream wchat) -> BOOL {
+        std::wstring param;
+        wchat >> param;
 
-    ChatInputCallbacks[L"~swatch"] = [](wchar_t* wMsg) -> BOOL {
-        drawSwatch = !drawSwatch;
+        if (wchat) {
+            if (param == L"debug") {
+                drawDebug = !drawDebug;
+                return FALSE;
+            }
+            else if (param == L"swatch") {
+                drawSwatch = !drawSwatch;
+                return FALSE;
+            }
+        }
+
+        wcout << "Usage: ~toggle param" << endl << "Example: ~toggle debug" << endl << "Available flags: debug, swatch" << endl << endl;
+
         return FALSE;
     };
 
     // https://github.com/blizzhackers/d2bs/blob/6f2bc2fe658164590f3cb2196efa50acfcf154c2/Room.cpp#L35
-    ChatInputCallbacks[L"~reveal"] = [](wchar_t* wMsg) -> BOOL {
+    ChatInputCallbacks[L"~reveal"] = [](InputStream wchat) -> BOOL {
         cout << "Revealing automap..." << endl;
         RevealCurrentLevel();
+        return FALSE;
+    };
+
+    ChatInputCallbacks[L"~patch"] = [](InputStream wchat) -> BOOL {
+        DWORD address;
+        int size;
+        unsigned long long value;
+        std::vector<DeferredPatch> data;
+        std::wstring possible;
+        wchat >> hex >> address;
+
+        if (wchat) {
+            wchat >> possible;
+            if (!wchat) {
+                wcout << "No data specified" << endl;
+                goto usage;
+            }
+
+            do {
+                size = possible.size() >> 1;
+                if (size == 1 || size == 2 || size == 4 || size == 8) {
+                    std::wstringstream hexread(possible);
+                    hexread >> hex >> value;
+                    if (hexread) {
+                        data.push_back({ size, value });
+                    }
+                    else {
+                        wcout << "Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!" << endl;
+                        goto usage;
+                    }
+                }
+                else {
+                    wcout << "Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!" << endl;
+                    goto usage;
+                }
+                wchat >> possible;
+            } while (wchat);
+
+            MemoryPatch patch(address);
+            for (DeferredPatch patchdata : data) {
+                switch (patchdata.size) {
+                case 1:
+                    patch << (char)patchdata.value;
+                    break;
+                case 2:
+                    patch << (short)patchdata.value;
+                    break;
+                case 4:
+                    patch << (long)patchdata.value;
+                    break;
+                case 8:
+                    patch << (long long)patchdata.value;
+                    break;
+                default:
+                    wcout << "Nishi, your code is stupid. Please write it correctly" << endl;
+                    return FALSE;
+                }
+            }
+
+            return FALSE;
+        }
+
+        usage:
+
+        wcout << "Usage: ~patch address data [data ...]" << endl << "Example: ~patch 7BB3A4 00000001" << endl << endl;
+
         return FALSE;
     };
 
