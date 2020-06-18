@@ -280,6 +280,18 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
 
     MemoryPatch(D2::CustomDebugPrintPatch) << CALL(myDebugPrint);
 
+
+    // Draw game server in all games not just TCP/ip
+    MemoryPatch(D2::DrawGameServerIpPatch)
+        << SKIP(2)                          // CMP ESI, 
+        << BYTE(0x00)                       // 0 instead of 6
+        << BYTESEQ{ 0x74, 0x0a }            // JE 0xa positons - Jump
+        << SKIP(2)                          // CMP ESI, 
+        << BYTE(0x01)                       // 1 instead of 8
+        << BYTESEQ{ 0x74, 0x05 };           // JE 0xa positons - Jump
+    
+
+
     *D2::NoPickUp = true;
 
     cout << "Charon loaded." << endl;
