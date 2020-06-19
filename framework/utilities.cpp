@@ -37,22 +37,36 @@ POINT WorldToAutomap(D2::Types::Path *path, DPOINT adjust) {
 }
 
 void DrawDot(POINT pos, DWORD dwColor) {
-    D2::DrawLine(pos.x - 1, pos.y, pos.x + 1, pos.y, dwColor, 0xFF);
-    D2::DrawLine(pos.x, pos.y - 1, pos.x, pos.y + 1, dwColor, 0xFF);
+    DrawLine({ pos.x - 1, pos.y }, { pos.x + 1, pos.y }, dwColor);
+    DrawLine({ pos.x, pos.y - 1 }, { pos.x, pos.y + 1 }, dwColor);
+}
+
+void DrawAutomapX(D2::Types::ItemPath* arg, DWORD dwColor, double size) {
+    POINT a = WorldToAutomap({ (double)arg->dwPosX - size, (double)arg->dwPosY }), b = WorldToAutomap({ (double)arg->dwPosX + size, (double)arg->dwPosY });
+    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
+    a = WorldToAutomap({ (double)arg->dwPosX, (double)arg->dwPosY - size }), b = WorldToAutomap({ (double)arg->dwPosX, (double)arg->dwPosY + size });
+    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
+}
+
+void DrawWorldX(D2::Types::ItemPath* arg, DWORD dwColor, double size) {
+    POINT a = WorldToScreen({ (double)arg->dwPosX - size, (double)arg->dwPosY }), b = WorldToAutomap({ (double)arg->dwPosX + size, (double)arg->dwPosY });
+    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
+    a = WorldToScreen({ (double)arg->dwPosX, (double)arg->dwPosY - size }), b = WorldToAutomap({ (double)arg->dwPosX, (double)arg->dwPosY + size });
+    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
 }
 
 void DrawAutomapX(D2::Types::Path *arg, DWORD dwColor, double size) {
     POINT a = WorldToAutomap(arg, { -size, 0 }), b = WorldToAutomap(arg, { size, 0 });
-    D2::DrawLine(a.x, a.y, b.x, b.y, dwColor, 0xFF);
+    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
     a = WorldToAutomap(arg, { 0, -size }), b = WorldToAutomap(arg, { 0, size });
-    D2::DrawLine(a.x, a.y, b.x, b.y, dwColor, 0xFF);
+    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
 }
 
 void DrawWorldX(D2::Types::Path* arg, DWORD dwColor, double size) {
     POINT a = WorldToScreen(arg, { -size, 0 }), b = WorldToScreen(arg, { size, 0 });
-    D2::DrawLine(a.x, a.y, b.x, b.y, dwColor, 0xFF);
+    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
     a = WorldToScreen(arg, { 0, -size }), b = WorldToScreen(arg, { 0, size });
-    D2::DrawLine(a.x, a.y, b.x, b.y, dwColor, 0xFF);
+    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
 }
 
 DWORD unitHP(D2::Types::UnitAny* unit) {

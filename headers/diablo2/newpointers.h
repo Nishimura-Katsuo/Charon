@@ -15,6 +15,9 @@ namespace Offset {
 #define XREF extern ExternalReference
 #endif
 
+// Use XREF to declare these in this file instead of the class itself.
+// We're using XREF as a switch to declare or define these so we can
+// Write it only once.
 template <DWORD& base, class F, DWORD offset>
 class ExternalReference {
 public:
