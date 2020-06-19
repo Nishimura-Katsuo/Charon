@@ -432,6 +432,7 @@ VARPTR(Base, CurrentWaypointMenuTab, DWORD, 0x3BF086)           //007BF086-BASE
 VARPTR(Base, DrawFPS, BOOL, 0x3BB3A4)                           //007BB3A4-BASE
 
 FUNCPTR(Base, DrawAutomap, void __fastcall, (), 0x5ad60)        // NEW 1.14d //0045ad60-BASE
+ASMPTR(Base, DrawGameServerIpPatch, 0x5ADC7)                    //0045ADC7-BASE
 ASMPTR(Base, GameLoopPatch, 0x51C2A)                            //00451C2A-BASE
 ASMPTR(Base, oogLoopPatch, 0xFA663)                             //004FA663-BASE
 ASMPTR(Base, GameAutomapDrawPatch, 0x56fa5)                     //00456FA5-BASE
