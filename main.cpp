@@ -9,10 +9,11 @@ using std::cout;
 using std::endl;
 using std::hex;
 
-bool drawDebug = true, drawSwatch = false;
+bool drawDebug = false, drawSwatch = false;
 wchar_t wHex[] = L"0123456789ABCDEF";
 const wchar_t* align[] = { L"Hostile", L"Neutral", L"Friendly" };
 InputCallbackMap ChatInputCallbacks;
+DWORD currentLevel, revealDelay = 0;
 
 void drawBranding(bool inGame) {
     WCHAR msgtext[] = L"Charon v0.1";
@@ -23,18 +24,15 @@ void drawBranding(bool inGame) {
 }
 
 void gameUnitPreDraw() {
-    // Could use this to draw tile markers or something.
     // Server side tracks enemies
-    // Needs filtering
-
     if (drawDebug) {
         POINT pos{ D2::PlayerUnit[0]->pPath->xPos, D2::PlayerUnit[0]->pPath->yPos };
         int gridsize = 30, color = 193;
 
         for (int x = -gridsize; x <= gridsize; x++) {
             for (int y = -gridsize; y <= gridsize; y++) {
-                DrawWorldLine({ pos.x + x, pos.y + y }, { pos.x + x + 1, pos.y + y }, color);
-                DrawWorldLine({ pos.x + x, pos.y + y }, { pos.x + x, pos.y + y + 1 }, color);
+                DrawLine(WorldToScreen({ (double)pos.x + x, (double)pos.y + y }), WorldToScreen({ (double)pos.x + x + 1, (double)pos.y + y }), color);
+                DrawLine(WorldToScreen({ (double)pos.x + x, (double)pos.y + y }), WorldToScreen({ (double)pos.x + x, (double)pos.y + y + 1 }), color);
             }
         }
 
@@ -42,16 +40,24 @@ void gameUnitPreDraw() {
         for (int c = 0; c < 128; c++) {
             for (D2::Types::UnitAny* unit = D2::ServerSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
                 if (unit->pPath && unitHP(unit) > 0) {
-                    // Turn this into a stat overlay with flags, etc for debugging
-                    POINT pos = unitScreenPos(unit);
+                    POINT pos = WorldToScreen(unit->pPath), target = WorldToScreen({ (double)unit->pPath->xTarget, (double)unit->pPath->yTarget });
 
-                    if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight) {
-                        if (unit->pPath->xTarget || unit->pPath->yTarget) {
-                            POINT target = WorldToScreen({ unit->pPath->xTarget, unit->pPath->yTarget });
-                            target.y += 12;
-                            DrawScreenLine(pos, target, 0x99);
-                        }
+                    if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight && target.x >= 0 && target.y >= 0 && target.x < D2::ScreenWidth && target.y < D2::ScreenHeight) {
+                        DrawLine(pos, target, 0x99);
                     }
+                }
+            }
+        }
+
+        // Client side tracks missiles
+        d = 3;
+        for (int c = 0; c < 128; c++) {
+            for (D2::Types::UnitAny* unit = D2::ClientSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
+                DrawWorldX(unit->pPath, 0x99);
+                POINT pos = WorldToScreen(unit->pPath), target = WorldToScreen({ (double)unit->pPath->xTarget, (double)unit->pPath->yTarget });
+
+                if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight && target.x >= 0 && target.y >= 0 && target.x < D2::ScreenWidth && target.y < D2::ScreenHeight) {
+                    DrawLine(pos, target, 0x83);
                 }
             }
         }
@@ -60,45 +66,65 @@ void gameUnitPreDraw() {
 
 void gameUnitPostDraw() {
     // Server side tracks enemies
-    // Needs filtering
     if (drawDebug) {
         BYTE d = 1;
         wchar_t msg[512];
+        DWORD fontNum = 12, width = 0, height = 0;
+        D2::SetFont(fontNum);
+
         for (int c = 0; c < 128; c++) {
             for (D2::Types::UnitAny* unit = D2::ServerSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
                 if (unit->pPath) {
-                    // Turn this into a stat overlay with flags, etc for debugging
-                    POINT pos = unitScreenPos(unit);
+                    POINT pos = WorldToScreen(unit->pPath);
 
                     if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight) {
                         swprintf_s(msg, L"%s\n%s\n%s", (isAttackable(unit) ? L"Combat" : L"Non-Combat"), align[D2::GetUnitStat(unit, 172, 0)], D2::GetUnitName(unit));
-                        DWORD fontNum = 12, width = 0, height = 0;
-                        D2::SetFont(fontNum);
                         height = D2::GetTextSize(msg, &width, &fontNum);
                         D2::DrawGameText(msg, pos.x - (width >> 1), pos.y + height, 0, 1);
                     }
                 }
             }
         }
+
+        // Client side tracks missiles
+        d = 3;
+        POINT pos;
+        for (int c = 0; c < 128; c++) {
+            for (D2::Types::UnitAny* unit = D2::ClientSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
+                pos = WorldToScreen(unit->pPath);
+                swprintf_s(msg, L"dwOwnerType: %d", unit->dwOwnerType);
+                height = D2::GetTextSize(msg, &width, &fontNum);
+                D2::DrawGameText(msg, pos.x - (width >> 1), pos.y + height, 0, 1);
+            }
+        }
     }
 }
 
 void gameAutomapPreDraw() {
-
+    // Draw behind automap. Not called when automap is off.
 }
 
 void gameAutomapPostDraw() {
     // Client side tracks missiles
-    // Needs filtering, and maybe coloring 
     BYTE d = 3;
     for (int c = 0; c < 128; c++) {
         for (D2::Types::UnitAny* unit = D2::ClientSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
-            DrawMinimapDot(unit->pPath->xPos, unit->pPath->yPos, 0x99, 0xFF);
+            unit->dwOwnerType;
+            switch (unit->dwOwnerType) {
+                // Missiles cast directly by us (not owned units, like merc, hydras, etc)
+                case 0:
+                    DrawDot(WorldToAutomap(unit->pPath), 0x99);
+                    break;
+                // Most others
+                case 1:
+                default:
+                    DrawDot(WorldToAutomap(unit->pPath), 0x99);
+                    break;
+            }
         }
     }
 
     // Server side tracks enemies
-    // Needs filtering
     d = 1;
     for (int c = 0; c < 128; c++) {
         for (D2::Types::UnitAny* unit = D2::ServerSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
@@ -126,7 +152,28 @@ void gameAutomapPostDraw() {
                     color = 28;
                 }
 
-                DrawMinimapX(unit->pPath->xPos, unit->pPath->yPos, color);
+                DrawAutomapX(unit->pPath, color);
+            }
+        }
+    }
+
+    if (drawDebug) {
+        D2::Types::UnitAny* player = D2::GetPlayerUnit();
+        if (player) {
+            D2::Types::Level* level = player->pPath->pRoom1->pRoom2->pLevel;
+            if (level) {
+                // Loop trough all rooms of current lvl
+                for (D2::Types::Room2* room = player->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room; room = room->pRoom2Next) {
+                    if (room->pPreset) {
+                        // Loop trough presets of current lvl
+                        for (D2::Types::PresetUnit* ps = room->pPreset; ps; ps = ps->pPresetNext) {
+                            //@ToDo; figure out which dots are important and which aren't
+                            // for now all we do is draw a green dot
+                            DrawDot(WorldToAutomap({ (double)room->dwPosX * 5 + ps->dwPosX, (double)room->dwPosY * 5 + ps->dwPosY }), 0x83);
+                        }
+                    }
+
+                }
             }
         }
     }
@@ -153,7 +200,19 @@ void gamePostDraw() {
 }
 
 void gameLoop() {
-    //cout << "In-game!" << endl;
+    D2::Types::UnitAny* me = D2::PlayerUnit[0];
+
+    if (me && me->pPath && me->pPath->pRoom1 && me->pPath->pRoom1->pRoom2 && me->pPath->pRoom1->pRoom2->pLevel) {
+        DWORD levelno = me->pPath->pRoom1->pRoom2->pLevel->dwLevelNo;
+        if (levelno != currentLevel) {
+            currentLevel = levelno;
+            revealDelay = 20;
+        }
+
+        if (revealDelay-- == 1) {
+            RevealCurrentLevel();
+        }
+    }
 }
 
 void oogPostDraw() {
@@ -161,7 +220,7 @@ void oogPostDraw() {
 }
 
 void oogLoop() {
-    //cout << "Out-of-game!" << endl;
+    currentLevel = 0;
 }
 
 BOOL __fastcall chatInput(wchar_t* wMsg) {
@@ -169,7 +228,7 @@ BOOL __fastcall chatInput(wchar_t* wMsg) {
         std::wstringstream msg(wMsg);
         std::wstring cmd;
         msg >> cmd;
-        return ChatInputCallbacks.at(cmd)(msg); // Find the callback, and then call it.
+        return ChatInputCallbacks.at(cmd)(cmd, msg); // Find the callback, and then call it.
     }
     catch (...) {
         return TRUE; // Ignore the exception. Command not found.
@@ -208,9 +267,18 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::CustomDebugPrintPatch) << CALL(CustomDebugPrint); // Allow state changes to be hooked
     MemoryPatch(D2::ShakePatch) << BYTE(0xC3); // Ignore shaking requests
 
+    // Draw game server in all games not just TCP/ip
+    MemoryPatch(D2::DrawGameServerIpPatch)
+        << SKIP(2)                          // CMP ESI, 
+        << BYTE(0x00)                       // 0 instead of 6
+        << BYTESEQ{ 0x74, 0x0a }            // JE 0xa positons - Jump
+        << SKIP(2)                          // CMP ESI, 
+        << BYTE(0x01)                       // 1 instead of 8
+        << BYTESEQ{ 0x74, 0x05 };           // JE 0xa positons - Jump
+    
     *D2::NoPickUp = true;
 
-    ChatInputCallbacks[L"~toggle"] = [](InputStream wchat) -> BOOL {
+    ChatInputCallbacks[L"/toggle"] = ChatInputCallbacks[L"~toggle"] = [](std::wstring cmd, InputStream wchat) -> BOOL {
         std::wstring param;
         wchat >> param;
 
@@ -225,19 +293,12 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
             }
         }
 
-        wcout << "Usage: ~toggle param" << endl << "Example: ~toggle debug" << endl << "Available flags: debug, swatch" << endl << endl;
+        wcout << "Usage: " << cmd << " param" << endl << "Example: " << cmd << " debug" << endl << "Available flags: debug, swatch" << endl << endl;
 
         return FALSE;
     };
 
-    // https://github.com/blizzhackers/d2bs/blob/6f2bc2fe658164590f3cb2196efa50acfcf154c2/Room.cpp#L35
-    ChatInputCallbacks[L"~reveal"] = [](InputStream wchat) -> BOOL {
-        cout << "Revealing automap..." << endl;
-        RevealCurrentLevel();
-        return FALSE;
-    };
-
-    ChatInputCallbacks[L"~patch"] = [](InputStream wchat) -> BOOL {
+    ChatInputCallbacks[L"/patch"] = ChatInputCallbacks[L"~patch"] = [](std::wstring cmd, InputStream wchat) -> BOOL {
         DWORD address;
         int size;
         unsigned long long value;
@@ -288,7 +349,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
                     patch << (long long)patchdata.value;
                     break;
                 default:
-                    wcout << "Nishi, your code is stupid. Please write it correctly" << endl;
+                    wcout << "Nishi, your code is stupid. Please write it correctly." << endl;
                     return FALSE;
                 }
             }
@@ -298,7 +359,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
 
         usage:
 
-        wcout << "Usage: ~patch address data [data ...]" << endl << "Example: ~patch 7BB3A4 00000001" << endl << endl;
+        wcout << "Usage: " << cmd << " address data [data ...]" << endl << "Example: " << cmd << " 7BB3A4 00000001" << endl << endl;
 
         return FALSE;
     };

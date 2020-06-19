@@ -44,9 +44,6 @@ FUNCPTR(D2CLIENT, LeftClickItem_I, void __stdcall,
 (D2::Types::UnitAny* pPlayer, D2::Types::Inventory* pInventory, int x, int y, DWORD dwClickType, D2::Types::InventoryLayout* pLayout, DWORD Location),
 0x8FFE0) // Updated 1.14d //0048FFE0-BASE
 
-FUNCPTR(D2CLIENT, GetMouseXOffset, DWORD __fastcall, (VOID), 0x5AFC0) // Updated 1.14d //0045AFC0-BASE
-FUNCPTR(D2CLIENT, GetMouseYOffset, DWORD __fastcall, (VOID), 0x5AFB0) // Updated 1.14d //0045AFB0-BASE
-
 FUNCPTR(D2CLIENT, PrintGameString, void __fastcall, (wchar_t* wMessage, int nColor), 0x9E3A0)  // Updated 1.14d //0049E3A0-BASE
 FUNCPTR(D2CLIENT, PrintPartyString, void __fastcall, (wchar_t* wMessage, int nColor), 0x9E5C0) // Updated 1.14d //0049E5C0-BASE
 
@@ -322,10 +319,8 @@ VARPTR(D2NET, CriticalPacketSection, CRITICAL_SECTION, 0xB400) // unused but we 
 // //004F6510-BASE
 FUNCPTR(D2GFX, DrawRectangle, void __stdcall, (int X1, int Y1, int X2, int Y2, DWORD dwColor, DWORD dwTrans), 0xF6300) // Updated 1.14d //004F6300-BASE
 FUNCPTR(D2GFX, DrawLine, void __stdcall, (int X1, int Y1, int X2, int Y2, DWORD dwColor, DWORD dwUnk), 0xF6380)        // Updated 1.14d //004F6380-BASE
-FUNCPTR(D2GFX, DrawAutomapCell2, void __stdcall, (D2::Types::CellContext* context, DWORD xpos, DWORD ypos, DWORD bright2, DWORD bright, BYTE* coltab),
-0xF6480)                                            // Updated 1.14d //004F6480-BASE
+FUNCPTR(D2GFX, DrawAutomapCell2, void __stdcall, (D2::Types::CellContext* context, DWORD xpos, DWORD ypos, DWORD bright2, DWORD bright, BYTE* coltab), 0xF6480)// Updated 1.14d //004F6480-BASE
 FUNCPTR(D2GFX, GetHwnd, HWND __stdcall, (void), 0xF59A0)    // Updated 1.14d //004F59A0-BASE
-FUNCPTR(D2GFX, GetScreenMode, DWORD __stdcall, (), 0xF5160) // Updated 1.14d //004F5160-BASE
 FUNCPTR(D2GFX, GetScreenModeSize, void __stdcall, (int nResolutionMode, int* pResRightMax, int* pResBottomMax), 0xF5570) // NEW 1.14d //004F5570-BASE
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -433,6 +428,7 @@ VARPTR(Base, CurrentWaypointMenuTab, DWORD, 0x3BF086)           //007BF086-BASE
 VARPTR(Base, DrawFPS, BOOL, 0x3BB3A4)                           //007BB3A4-BASE
 
 FUNCPTR(Base, DrawAutomap, void __fastcall, (), 0x5ad60)        // NEW 1.14d //0045ad60-BASE
+ASMPTR(Base, DrawGameServerIpPatch, 0x5ADC7)                    //0045ADC7-BASE
 ASMPTR(Base, GameLoopPatch, 0x51C2A)                            //00451C2A-BASE
 ASMPTR(Base, oogLoopPatch, 0xFA663)                             //004FA663-BASE
 ASMPTR(Base, GameAutomapDrawPatch, 0x56fa5)                     //00456FA5-BASE

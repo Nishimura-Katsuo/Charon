@@ -4,11 +4,7 @@
 #pragma once
 
 #include "../headers/diablo2/D2Structs.h"
-
-namespace Offset {
-    extern DWORD Base;
-    void DefineOffsets();
-}
+#include "newpointers.h"
 
 namespace D2 {
 #define FUNCPTR(m, n, r, a, o) typedef r n##_##t a; extern n##_##t* n;

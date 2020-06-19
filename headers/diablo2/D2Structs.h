@@ -11,6 +11,11 @@
 #pragma warning(disable : 4201)
 #pragma optimize("", off)
 
+class DPOINT {
+public:
+    double x, y;
+};
+
 namespace D2 {
     namespace Types {
         struct UnitAny;
