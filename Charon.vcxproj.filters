@@ -36,6 +36,9 @@
     <ClInclude Include="headers\diablo2\utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="headers\diablo2\newpointers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
