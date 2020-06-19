@@ -9,6 +9,8 @@ POINT WorldToScreen(D2::Types::Path* path, DPOINT adjust = { 0, 0 });
 POINT WorldToAutomap(DPOINT pos);
 POINT WorldToAutomap(D2::Types::Path* path, DPOINT adjust = { 0, 0 });
 void DrawDot(POINT pos, DWORD dwColor);
+void DrawAutomapX(D2::Types::ItemPath* arg, DWORD dwColor, double size = 5);
+void DrawWorldX(D2::Types::ItemPath* arg, DWORD dwColor, double size = 1);
 void DrawAutomapX(D2::Types::Path* arg, DWORD dwColor, double size = 5);
 void DrawWorldX(D2::Types::Path* arg, DWORD dwColor, double size = 1);
 DWORD unitHP(D2::Types::UnitAny* unit);

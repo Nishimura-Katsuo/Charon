@@ -24,6 +24,7 @@ void drawBranding(bool inGame) {
 }
 
 void gameUnitPreDraw() {
+    BYTE d;
     // Server side tracks enemies
     if (drawDebug) {
         POINT pos{ D2::PlayerUnit[0]->pPath->xPos, D2::PlayerUnit[0]->pPath->yPos };
@@ -36,7 +37,7 @@ void gameUnitPreDraw() {
             }
         }
 
-        BYTE d = 1;
+        d = 1;
         for (int c = 0; c < 128; c++) {
             for (D2::Types::UnitAny* unit = D2::ServerSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
                 if (unit->pPath && unitHP(unit) > 0) {
@@ -65,13 +66,14 @@ void gameUnitPreDraw() {
 }
 
 void gameUnitPostDraw() {
+    BYTE d;
+
     // Server side tracks enemies
     if (drawDebug) {
-        BYTE d = 1;
         wchar_t msg[512];
         DWORD fontNum = 12, width = 0, height = 0;
         D2::SetFont(fontNum);
-
+        d = 1;
         for (int c = 0; c < 128; c++) {
             for (D2::Types::UnitAny* unit = D2::ServerSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
                 if (unit->pPath) {
@@ -104,9 +106,13 @@ void gameAutomapPreDraw() {
     // Draw behind automap. Not called when automap is off.
 }
 
+DWORD ItemRarityColor[32] = { 255, 29, 30, 32, 151, 132, 111, 155, 111 };
+
 void gameAutomapPostDraw() {
+    BYTE d;
+
     // Client side tracks missiles
-    BYTE d = 3;
+    d = 3;
     for (int c = 0; c < 128; c++) {
         for (D2::Types::UnitAny* unit = D2::ClientSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
             unit->dwOwnerType;
@@ -124,6 +130,22 @@ void gameAutomapPostDraw() {
         }
     }
 
+    // Server side tracks items
+    d = 4;
+    for (int c = 0; c < 128; c++) {
+        for (D2::Types::UnitAny* unit = D2::ServerSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
+            if (unit->dwMode == 3 || unit->dwMode == 5) {
+                // unit->dwTxtFileNo = item type or classid or whatever you want to call it
+                if (unit->pItemData->dwQuality > 3) {
+                    DrawAutomapX(unit->pItemPath, ItemRarityColor[unit->pItemData->dwQuality], 3);
+                }
+                else if (unit->dwTxtFileNo >= 96 && unit->dwTxtFileNo <= 102 || unit->dwTxtFileNo == 74) {
+                    DrawAutomapX(unit->pItemPath, 169, 3);
+                }
+            }
+        }
+    }
+
     // Server side tracks enemies
     d = 1;
     for (int c = 0; c < 128; c++) {
@@ -133,23 +155,23 @@ void gameAutomapPostDraw() {
 
                 if (isAttackable(unit)) {
                     if (unit->pMonsterData->fBoss) {
-                        color = 12;
+                        DrawAutomapX(unit->pPath, 0x70, 7);
                     }
                     else if (unit->pMonsterData->fChamp) {
-                        color = 12;
+                        DrawAutomapX(unit->pPath, 0x0C);
                     }
                     else if (unit->pMonsterData->fMinion) {
-                        color = 12;
+                        DrawAutomapX(unit->pPath, 0x0B);
                     }
                     else if (unit->pMonsterData->fUnk) {
-                        color = 13;
+                        DrawAutomapX(unit->pPath, 0x0A);
                     }
                     else {
-                        color = 10;
+                        DrawAutomapX(unit->pPath, 0x0A);
                     }
                 }
                 else {
-                    color = 28;
+                    DrawAutomapX(unit->pPath, 0x1B);
                 }
 
                 DrawAutomapX(unit->pPath, color);
@@ -213,6 +235,9 @@ void gameLoop() {
             RevealCurrentLevel();
         }
     }
+
+    // This is where the hard logic should be performed. It's outside the render loop, but before the throttle sync,
+    // so idle time can be used to do more complex tasks.
 }
 
 void oogPostDraw() {
@@ -221,6 +246,7 @@ void oogPostDraw() {
 
 void oogLoop() {
     currentLevel = 0;
+    // Out of game logic goes here.
 }
 
 BOOL __fastcall chatInput(wchar_t* wMsg) {
@@ -260,22 +286,10 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::oogDrawPatch) << CALL(_oogDraw); // Hook the oog draw
     MemoryPatch(D2::MultiPatch) << CALL(multi) << ASM::NOP; // Allow multiple windows open
     MemoryPatch(D2::ChatInputPatch) << CALL(_chatInput); // Intercept game input
-    MemoryPatch(D2::FTJReducePatch) << BYTESEQ{ 0x81, 0xFE, 0xA0, 0x0F, 0x00, 0x00 }; // FTJ Patch - cmp esi, 4000
-    MemoryPatch(D2::DisableBattleNetPatch) << BYTE(0xC3); // Prevent battle.net connections
-    MemoryPatch(D2::EnableDebugPrint) << true; // Enable in-game debug prints
     MemoryPatch(D2::NullDebugPrintf) << JUMP(printf_newline); // Enable even more console debug prints
-    MemoryPatch(D2::CustomDebugPrintPatch) << CALL(CustomDebugPrint); // Allow state changes to be hooked
-    MemoryPatch(D2::ShakePatch) << BYTE(0xC3); // Ignore shaking requests
+    MemoryPatch(D2::ShakePatch) << ASM::RET; // Ignore shaking requests
+    MemoryPatch(D2::DisableBattleNetPatch) << ASM::RET; // Prevent battle.net connections
 
-    // Draw game server in all games not just TCP/ip
-    MemoryPatch(D2::DrawGameServerIpPatch)
-        << SKIP(2)                          // CMP ESI, 
-        << BYTE(0x00)                       // 0 instead of 6
-        << BYTESEQ{ 0x74, 0x0a }            // JE 0xa positons - Jump
-        << SKIP(2)                          // CMP ESI, 
-        << BYTE(0x01)                       // 1 instead of 8
-        << BYTESEQ{ 0x74, 0x05 };           // JE 0xa positons - Jump
-    
     *D2::NoPickUp = true;
 
     ChatInputCallbacks[L"/toggle"] = ChatInputCallbacks[L"~toggle"] = [](std::wstring cmd, InputStream wchat) -> BOOL {
@@ -285,6 +299,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
         if (wchat) {
             if (param == L"debug") {
                 drawDebug = !drawDebug;
+                MemoryPatch(D2::EnableDebugPrint) << drawDebug; // Enable in-game debug prints
                 return FALSE;
             }
             else if (param == L"swatch") {
