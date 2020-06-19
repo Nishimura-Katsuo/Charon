@@ -162,6 +162,7 @@
     <ClInclude Include="headers\common.h" />
     <ClInclude Include="headers\diablo2\D2Structs.h" />
     <ClInclude Include="headers\diablo2\intercepts.h" />
+    <ClInclude Include="headers\diablo2\newpointers.h" />
     <ClInclude Include="headers\diablo2\pointerdefs.h" />
     <ClInclude Include="headers\diablo2\pointers.h" />
     <ClInclude Include="headers\diablo2\utilities.h" />

@@ -1,7 +1,12 @@
 /**
  * Define game pointers.
  */
+#define DEFINE_XREF
+
+#include <vector>
+#include <functional>
 #include "../headers/diablo2/D2Structs.h"
+#include "../headers/diablo2/newpointers.h"
 
 namespace Offset {
     DWORD Base, D2CLIENT, D2COMMON, D2GAME, D2LANG, D2NET, D2MULTI, D2LAUNCH, D2WIN, D2GFX, D2CMP, BNCLIENT, STORM;
