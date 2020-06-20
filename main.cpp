@@ -28,6 +28,7 @@ void gameUnitPreDraw() {
     // Server side tracks enemies
     if (drawDebug) {
         POINT pos{ D2::PlayerUnit[0]->pPath->xPos, D2::PlayerUnit[0]->pPath->yPos };
+        /*
         int gridsize = 30, color = 193;
 
         for (int x = -gridsize; x <= gridsize; x++) {
@@ -36,6 +37,19 @@ void gameUnitPreDraw() {
                 DrawLine(WorldToScreen({ (double)pos.x + x, (double)pos.y + y }), WorldToScreen({ (double)pos.x + x, (double)pos.y + y + 1 }), color);
             }
         }
+        */
+
+        D2::Types::Room1* room1 = D2::PlayerUnit[0]->pPath->pRoom1;
+        D2::Types::Room2* room2 = room1->pRoom2;
+
+        POINT pa = WorldToScreen({ (double)room1->dwXStart, (double)room1->dwYStart }),
+            pb = WorldToScreen({ (double)room1->dwXStart, (double)room1->dwYStart + (double)room1->dwYSize }),
+            pc = WorldToScreen({ (double)room1->dwXStart + (double)room1->dwXSize, (double)room1->dwYStart }),
+            pd = WorldToScreen({ (double)room1->dwXStart + (double)room1->dwXSize, (double)room1->dwYStart + (double)room1->dwYSize });
+        DrawLine(pa, pb, 0x84);
+        DrawLine(pa, pc, 0x84);
+        DrawLine(pb, pd, 0x84);
+        DrawLine(pc, pd, 0x84);
 
         d = 1;
         for (int c = 0; c < 128; c++) {

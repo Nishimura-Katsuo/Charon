@@ -1,6 +1,7 @@
 #pragma once
 
 #include "D2Structs.h"
+#include <map>
 
 extern DPOINT xvector, yvector;
 void DrawLine(POINT a, POINT b, DWORD dwColor);
@@ -20,3 +21,4 @@ bool isAttackable(D2::Types::UnitAny* unit);
 bool isEnemy(D2::Types::UnitAny* unit);
 void __fastcall CustomDebugPrint(DWORD unk, char* szMsg, DWORD color);
 void RevealCurrentLevel();
+extern std::map<DWORD, std::vector<FoundExit>> RevealedExits;

@@ -16,6 +16,11 @@ public:
     double x, y;
 };
 
+class FoundExit {
+    POINT pos;
+    DWORD type;
+};
+
 namespace D2 {
     namespace Types {
         struct UnitAny;
