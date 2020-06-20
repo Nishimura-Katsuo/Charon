@@ -139,8 +139,11 @@ void gameAutomapPostDraw() {
                 if (unit->pItemData->dwQuality > 3) {
                     DrawAutomapX(unit->pItemPath, ItemRarityColor[unit->pItemData->dwQuality], 3);
                 }
-                else if (unit->dwTxtFileNo >= 96 && unit->dwTxtFileNo <= 102 || unit->dwTxtFileNo == 74) {
-                    DrawAutomapX(unit->pItemPath, 169, 3);
+                else {
+                    D2::Types::ItemTxt *txt = D2::GetItemText(unit->dwTxtFileNo);
+                    if (txt->nType >= 96 && txt->nType <= 102 || txt->nType == 74) {
+                        DrawAutomapX(unit->pItemPath, 169, 3);
+                    }
                 }
             }
         }
@@ -151,20 +154,12 @@ void gameAutomapPostDraw() {
     for (int c = 0; c < 128; c++) {
         for (D2::Types::UnitAny* unit = D2::ServerSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
             if (isHostile(unit) && unitHP(unit) > 0) {
-                DWORD color = 10;
-
                 if (isAttackable(unit)) {
-                    if (unit->pMonsterData->fBoss) {
-                        DrawAutomapX(unit->pPath, 0x70, 7);
-                    }
-                    else if (unit->pMonsterData->fChamp) {
+                    if (unit->pMonsterData->fBoss || unit->pMonsterData->fChamp) {
                         DrawAutomapX(unit->pPath, 0x0C);
                     }
                     else if (unit->pMonsterData->fMinion) {
                         DrawAutomapX(unit->pPath, 0x0B);
-                    }
-                    else if (unit->pMonsterData->fUnk) {
-                        DrawAutomapX(unit->pPath, 0x0A);
                     }
                     else {
                         DrawAutomapX(unit->pPath, 0x0A);
@@ -173,8 +168,6 @@ void gameAutomapPostDraw() {
                 else {
                     DrawAutomapX(unit->pPath, 0x1B);
                 }
-
-                DrawAutomapX(unit->pPath, color);
             }
         }
     }

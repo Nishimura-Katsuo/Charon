@@ -93,67 +93,41 @@ void __fastcall CustomDebugPrint(DWORD unk, char* szMsg, DWORD color) {
     std::cout << (LPVOID)unk << " " << szMsg;
 }
 
-void RevealRoom(D2::Types::Room2* room2) {
+void CheckExits(D2::Types::Room2* room) {
 
-    if (room2->pLevel) {
-        // Get room
-        D2::Types::Level* level = room2->pLevel;
-        DWORD dwLevelNo = level->dwLevelNo;
-        bool added = false;
-        bool initOtherArea = false;
-
-        // If level or room1 isnt loaded
-        if (!room2->pLevel || !room2->pRoom1) {
-            D2::AddRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, NULL);
-            added = true;
-        }
-
-        // safety check to see if its loaded now
-        if (!room2->pRoom1 || !room2->pLevel) {
-            return;
-        }
-
-        // Init the automap layer of those areas we are not at ourselfs
-        if (room2->pLevel->dwLevelNo && dwLevelNo != room2->pLevel->dwLevelNo) {
-            D2::InitAutomapLayer_I(D2::GetLayer(room2->pLevel->dwLevelNo)->nLayerNo);
-            initOtherArea = true;
-        }
-
-        D2::RevealAutomapRoom(room2->pRoom1, TRUE, *D2::AutomapLayer);
-
-        // If we added a room to reveal it, clean up
-        if (added) {
-            D2::RemoveRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, NULL);
-        }
-
-        // If we had to init another area, init our current area
-        if (initOtherArea) {
-            D2::InitAutomapLayer_I(D2::GetLayer(dwLevelNo)->nLayerNo);
-        }
-    }
-}
-
-D2::Types::Room2* GetRoomTileOtherRoom2(D2::Types::Room2* room2, DWORD roomtileno) {
-    D2::Types::RoomTile* roomtile = room2->pRoomTiles;
-    while (roomtile) {
-        if (*roomtile->nNum == roomtileno) {
-            return roomtile->pRoom2;
-        }
-        roomtile = roomtile->pNext;
-    }
-    return 0;
 }
 
 void RevealCurrentLevel() {
-    // Only when we exists we can load stuff
-    D2::Types::UnitAny* player = D2::GetPlayerUnit();
-    if (player == nullptr) return;
+    D2::Types::UnitAny* me = D2::PlayerUnit[0];
 
-    // Your not in any level?
-    D2::Types::Level* level = player->pPath->pRoom1->pRoom2->pLevel;
-    if (level == nullptr) return;
+    if (me) {
+        D2::Types::Level* level = me->pPath->pRoom1->pRoom2->pLevel;
 
-    for (D2::Types::Room2* room = player->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room; room = room->pRoom2Next) {
-        RevealRoom(room);
+        if (level) {
+        DWORD dwLevelNo = level->dwLevelNo;
+            size_t saveExits = RevealedExits[dwLevelNo].size() < 1;
+
+            for (D2::Types::Room2* room2 = level->pRoom2First; room2 != nullptr; room2 = room2->pRoom2Next) {
+                if (room2->pLevel && room2->pLevel->pMisc && room2->pLevel->pMisc->pAct) {
+                    if (room2->pRoom1 == nullptr) {
+            D2::AddRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, NULL);
+
+                        if (room2->pRoom1) {
+                            D2::RevealAutomapRoom(room2->pRoom1, TRUE, *D2::AutomapLayer);
+                            if (saveExits) {
+                                CheckExits(room2);
+        }
+            D2::RemoveRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, NULL);
+        }
+        }
+                    else {
+                        D2::RevealAutomapRoom(room2->pRoom1, TRUE, *D2::AutomapLayer);
+                        if (saveExits) {
+                            CheckExits(room2);
+    }
+}
+        }
+    }
+}
     }
 }
