@@ -19,5 +19,4 @@ bool isHostile(D2::Types::UnitAny* unit);
 bool isAttackable(D2::Types::UnitAny* unit);
 bool isEnemy(D2::Types::UnitAny* unit);
 void __fastcall CustomDebugPrint(DWORD unk, char* szMsg, DWORD color);
-D2::Types::Room2* GetRoomTileOtherRoom2(D2::Types::Room2* room2, DWORD roomtileno);
 void RevealCurrentLevel();
