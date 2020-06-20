@@ -7,6 +7,7 @@ using std::cout;
 using std::endl;
 
 DPOINT xvector = { 16.0, 8.0 }, yvector = { -16.0, 8.0 };
+std::map<DWORD, std::vector<FoundExit>> RevealedExits;
 
 void DrawLine(POINT a, POINT b, DWORD dwColor) {
     D2::DrawLine(a.x, a.y, b.x, b.y, dwColor, 0xFF);
@@ -104,30 +105,30 @@ void RevealCurrentLevel() {
         D2::Types::Level* level = me->pPath->pRoom1->pRoom2->pLevel;
 
         if (level) {
-        DWORD dwLevelNo = level->dwLevelNo;
+            DWORD dwLevelNo = level->dwLevelNo;
             size_t saveExits = RevealedExits[dwLevelNo].size() < 1;
-
+            
             for (D2::Types::Room2* room2 = level->pRoom2First; room2 != nullptr; room2 = room2->pRoom2Next) {
                 if (room2->pLevel && room2->pLevel->pMisc && room2->pLevel->pMisc->pAct) {
                     if (room2->pRoom1 == nullptr) {
-            D2::AddRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, NULL);
+                        D2::AddRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, NULL);
 
                         if (room2->pRoom1) {
                             D2::RevealAutomapRoom(room2->pRoom1, TRUE, *D2::AutomapLayer);
                             if (saveExits) {
                                 CheckExits(room2);
-        }
-            D2::RemoveRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, NULL);
-        }
-        }
+                            }
+                            D2::RemoveRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, NULL);
+                        }
+                    }
                     else {
                         D2::RevealAutomapRoom(room2->pRoom1, TRUE, *D2::AutomapLayer);
                         if (saveExits) {
                             CheckExits(room2);
-    }
-}
+                        }
+                    }
+                }
+            }
         }
-    }
-}
     }
 }
