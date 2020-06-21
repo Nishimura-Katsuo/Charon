@@ -280,23 +280,25 @@ namespace D2 {
             DWORD dwSizeRoomX; // 0x18
             DWORD dwSizeRoomY; // 0x1C
             WORD* pMapStart;   // 0x20 - Array of collision flags [localx + localy * dwSizeGameX]
-            /* Collision Flags (hex)
-                0001		   COLLIDE_BLOCK_PLAYER     black space' in arcane sanctuary, cliff walls etc
-                0002		   COLLIDE_BLOCK_MISSILE    tile based obstacles you can't shoot over
-                0004		   COLLIDE_WALL             assumed to be walls, most things check this
-                0008		   COLLIDE_BLOCK_LEAP
-                0010		   COLLIDE_ALTERNATE_FLOOR  some floors have this set, others don't
-                0020		   COLLIDE_BLANK            returned if the subtile is invalid
-                0040		   COLLIDE_MISSILE
-                0080		   COLLIDE_PLAYER
-                0100		   COLLIDE_MONSTER
-                0200		   COLLIDE_ITEM
-                0400		   COLLIDE_OBJECT
-                0800		   COLLIDE_DOOR
-                1000		   COLLIDE_UNIT_RELATED     set for units sometimes, but not always
-                2000		   COLLIDE_PET
-                4000		   COLLIDE_4000
-                8000		   COLLIDE_CORPSE           also used by portals, but dead monsters are mask 0x8000
+            /* Collision Flags
+
+                Binary             Bit Hex    Description
+                0b0000000000000001   0 0x0001 Block Walk
+                0b0000000000000010   1 0x0002 Block Sight
+                0b0000000000000100   2 0x0004 Block Missiles
+                0b0000000000001000   3 0x0008 Block Player (but not merc)
+                0b0000000000010000   4 0x0010 Alternate Floor (doors, entry/exit, some waypoints)
+                0b0000000000100000   5 0x0020 Blank (returned if the subtile is invalid)
+                0b0000000001000000   6 0x0040 Unknown
+                0b0000000010000000   7 0x0080 Players
+                0b0000000100000000   8 0x0100 NPCs & Monsters
+                0b0000001000000000   9 0x0200 Items
+                0b0000010000000000  10 0x0400 Objects (probably blocking)
+                0b0000100000000000  11 0x0800 Closed door
+                0b0001000000000000  12 0x1000 Set for units sometimes, but not always
+                0b0010000000000000  13 0x2000 Friendly NPCs
+                0b0100000000000000  14 0x4000 Unknown
+                0b1000000000000000  15 0x8000 Corpses (also used by portals, but dead monsters are mask 0x8000)
             */
             WORD* pMapEnd;     // 0x22
             WORD getCollision(DWORD localx, DWORD localy, WORD mask);
