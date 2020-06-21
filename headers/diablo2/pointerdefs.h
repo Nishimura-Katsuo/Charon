@@ -317,8 +317,8 @@ VARPTR(D2NET, CriticalPacketSection, CRITICAL_SECTION, 0xB400) // unused but we 
 
 // FUNCPTR(D2GFX, DrawAutomapCell, void __stdcall, (CellContext *context, DWORD xpos, DWORD ypos, RECT *cliprect, DWORD bright), 0xF6510) //Updated 1.14d
 // //004F6510-BASE
-FUNCPTR(D2GFX, DrawRectangle, void __stdcall, (int X1, int Y1, int X2, int Y2, DWORD dwColor, DWORD dwTrans), 0xF6300) // Updated 1.14d //004F6300-BASE
-FUNCPTR(D2GFX, DrawLine, void __stdcall, (int X1, int Y1, int X2, int Y2, DWORD dwColor, DWORD dwUnk), 0xF6380)        // Updated 1.14d //004F6380-BASE
+//FUNCPTR(D2GFX, DrawRectangle, void __stdcall, (int X1, int Y1, int X2, int Y2, DWORD dwColor, DWORD dwTrans), 0xF6300) // Updated 1.14d //004F6300-BASE
+//FUNCPTR(D2GFX, DrawLine, void __stdcall, (int X1, int Y1, int X2, int Y2, DWORD dwColor, DWORD dwUnk), 0xF6380)        // Updated 1.14d //004F6380-BASE
 FUNCPTR(D2GFX, DrawAutomapCell2, void __stdcall, (D2::Types::CellContext* context, DWORD xpos, DWORD ypos, DWORD bright2, DWORD bright, BYTE* coltab), 0xF6480)// Updated 1.14d //004F6480-BASE
 FUNCPTR(D2GFX, GetHwnd, HWND __stdcall, (void), 0xF59A0)    // Updated 1.14d //004F59A0-BASE
 FUNCPTR(D2GFX, GetScreenModeSize, void __stdcall, (int nResolutionMode, int* pResRightMax, int* pResBottomMax), 0xF5570) // NEW 1.14d //004F5570-BASE

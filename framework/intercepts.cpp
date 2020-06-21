@@ -3,10 +3,7 @@
  */
 #include "../headers/common.h"
 
-DWORD __fastcall show(DWORD a) {
-	std::cout << "ret: " << a << std::endl;
-	return a;
-}
+bool inGame = false;
 
 void __declspec(naked) _chatInput() {
 	__asm {
@@ -38,6 +35,7 @@ namespace D2 {
 
 // Since we patch to override DrawSprites, we need to call it ourselves.
 void _oogDraw() {
+	inGame = false;
 	D2::GetScreenModeSize(D2::GetScreenMode(), &D2::ScreenWidth, &D2::ScreenHeight);
 	DWORD old = D2::SetFont(DEFAULT_FONT);
 	oogPostDraw();
@@ -79,10 +77,22 @@ void _gameAutomapDraw() {
 }
 
 void _preDrawUnitsPatch() {
+	inGame = true;
 	gameUnitPreDraw();
 	__asm {
 		call D2::SomethingBeforeDrawUnits
 	}
+}
+
+void gameLoop();
+void oogLoop();
+
+void _gameLoop() {
+	gameLoop();
+}
+
+void _oogLoop() {
+	oogLoop();
 }
 
 // This is based on the actual source for printf... uses varargs.
