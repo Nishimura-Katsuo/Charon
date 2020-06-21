@@ -4,16 +4,13 @@
 
 #include "headers/common.h"
 
-using std::wcout;
-using std::cout;
-using std::endl;
-using std::hex;
-
-bool drawDebug = false, drawSwatch = false;
+bool debugMode = false, drawSwatch = false;
 wchar_t wHex[] = L"0123456789ABCDEF";
 const wchar_t* align[] = { L"Hostile", L"Neutral", L"Friendly" };
 InputCallbackMap ChatInputCallbacks;
 DWORD currentLevel, revealDelay = 0;
+
+using std::hex;
 
 void drawBranding(bool inGame) {
     WCHAR msgtext[] = L"Charon v0.1";
@@ -26,30 +23,29 @@ void drawBranding(bool inGame) {
 void gameUnitPreDraw() {
     BYTE d;
     // Server side tracks enemies
-    if (drawDebug) {
-        POINT pos{ D2::PlayerUnit[0]->pPath->xPos, D2::PlayerUnit[0]->pPath->yPos };
-        /*
-        int gridsize = 30, color = 193;
+    if (debugMode) {
+        D2::Types::Room1* current = D2::PlayerUnit[0]->pPath->pRoom1;
+        D2::Types::CollMap *coll = current->Coll;
+        WORD* p = coll->pMapStart;
+        DWORD color, x, y;
 
-        for (int x = -gridsize; x <= gridsize; x++) {
-            for (int y = -gridsize; y <= gridsize; y++) {
-                DrawLine(WorldToScreen({ (double)pos.x + x, (double)pos.y + y }), WorldToScreen({ (double)pos.x + x + 1, (double)pos.y + y }), color);
-                DrawLine(WorldToScreen({ (double)pos.x + x, (double)pos.y + y }), WorldToScreen({ (double)pos.x + x, (double)pos.y + y + 1 }), color);
+        for (x = 0; x < coll->dwSizeGameX; x++) {
+            for (y = 0; y < coll->dwSizeGameY; y++) {
+                color = coll->getCollision(x, y, 0x6) ? 0x62 : coll->getCollision(x, y, 0x405) ? 0x4B : 0x18;
+                DrawWorldX({ (double)coll->dwPosGameX + (double)x + 0.5, (double)coll->dwPosGameY + (double)y + 0.5 }, color, 0.5);
             }
         }
-        */
 
-        D2::Types::Room1* room1 = D2::PlayerUnit[0]->pPath->pRoom1;
-        D2::Types::Room2* room2 = room1->pRoom2;
-
-        POINT pa = WorldToScreen({ (double)room1->dwXStart, (double)room1->dwYStart }),
-            pb = WorldToScreen({ (double)room1->dwXStart, (double)room1->dwYStart + (double)room1->dwYSize }),
-            pc = WorldToScreen({ (double)room1->dwXStart + (double)room1->dwXSize, (double)room1->dwYStart }),
-            pd = WorldToScreen({ (double)room1->dwXStart + (double)room1->dwXSize, (double)room1->dwYStart + (double)room1->dwYSize });
-        DrawLine(pa, pb, 0x84);
-        DrawLine(pa, pc, 0x84);
-        DrawLine(pb, pd, 0x84);
-        DrawLine(pc, pd, 0x84);
+        for (unsigned int c = 0; c < current->dwRoomsNear; c++) {
+            coll = current->pRoomsNear[c]->Coll;
+            p = coll->pMapStart;
+            for (x = 0; x < coll->dwSizeGameX; x++) {
+                for (y = 0; y < coll->dwSizeGameY; y++) {
+                    color = coll->getCollision(x, y, 0x6) ? 0x62 : coll->getCollision(x, y, 0x405) ? 0x4B : 0x18;
+                    DrawWorldX({ (double)coll->dwPosGameX + (double)x + 0.5, (double)coll->dwPosGameY + (double)y + 0.5 }, color, 0.5);
+                }
+            }
+        }
 
         d = 1;
         for (int c = 0; c < 128; c++) {
@@ -58,7 +54,7 @@ void gameUnitPreDraw() {
                     POINT pos = WorldToScreen(unit->pPath), target = WorldToScreen({ (double)unit->pPath->xTarget, (double)unit->pPath->yTarget });
 
                     if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight && target.x >= 0 && target.y >= 0 && target.x < D2::ScreenWidth && target.y < D2::ScreenHeight) {
-                        DrawLine(pos, target, 0x99);
+                        //DrawLine(pos, target, 0x99);
                     }
                 }
             }
@@ -77,13 +73,34 @@ void gameUnitPreDraw() {
             }
         }
     }
+
+    D2::Types::UnitAny* player = D2::GetPlayerUnit();
+    if (player) {
+        D2::Types::Level* level = player->pPath->pRoom1->pRoom2->pLevel;
+        if (level) {
+            // Loop trough all rooms of current lvl
+            for (D2::Types::Room2* room = player->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room; room = room->pRoom2Next) {
+                if (room->pPreset) {
+                    // Loop trough presets of current lvl
+                    for (D2::Types::PresetUnit* ps = room->pPreset; ps; ps = ps->pPresetNext) {
+                        //@ToDo; figure out which dots are important and which aren't
+                        // for now all we do is draw a green dot
+                        if (ps->dwType == 5) {
+                            DrawWorldRadialShape({ (double)room->dwPosX * 5 + ps->dwPosX, (double)room->dwPosY * 5 + ps->dwPosY }, 4, 32, 0x83);
+                        }
+                    }
+                }
+
+            }
+        }
+    }
 }
 
 void gameUnitPostDraw() {
     BYTE d;
 
     // Server side tracks enemies
-    if (drawDebug) {
+    if (debugMode) {
         wchar_t msg[512];
         DWORD fontNum = 12, width = 0, height = 0;
         D2::SetFont(fontNum);
@@ -125,6 +142,31 @@ DWORD ItemRarityColor[32] = { 255, 29, 30, 32, 151, 132, 111, 155, 111 };
 void gameAutomapPostDraw() {
     BYTE d;
 
+    D2::Types::UnitAny* player = D2::GetPlayerUnit();
+    if (player) {
+        D2::Types::Level* level = player->pPath->pRoom1->pRoom2->pLevel;
+        if (level) {
+            // Loop trough all rooms of current lvl
+            for (D2::Types::Room2* room = player->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room; room = room->pRoom2Next) {
+                if (room->pPreset) {
+                    // Loop trough presets of current lvl
+                    for (D2::Types::PresetUnit* ps = room->pPreset; ps; ps = ps->pPresetNext) {
+                        //@ToDo; figure out which dots are important and which aren't
+                        // for now all we do is draw a green dot
+                        if (ps->dwType == 5) {
+                            DrawAutomapRadialShape({ (double)room->dwPosX * 5 + ps->dwPosX, (double)room->dwPosY * 5 + ps->dwPosY }, 4, 9, 0x83);
+                        }
+                    }
+                }
+
+            }
+
+            for (FoundExit exit : RevealedExits[level->dwLevelNo]) {
+                DrawLine(WorldToAutomap(exit.origin), WorldToAutomap(exit.target), 0x83);
+            }
+        }
+    }
+
     // Client side tracks missiles
     d = 3;
     for (int c = 0; c < 128; c++) {
@@ -149,8 +191,10 @@ void gameAutomapPostDraw() {
     for (int c = 0; c < 128; c++) {
         for (D2::Types::UnitAny* unit = D2::ServerSideUnitHashTables[d].table[c]; unit != NULL; unit = unit->pListNext) {
             if (unit->dwMode == 3 || unit->dwMode == 5) {
-                // unit->dwTxtFileNo = item type or classid or whatever you want to call it
-                if (unit->pItemData->dwQuality > 3) {
+                if (unit->pItemData->dwFlags & 0x4000000) {
+                    DrawAutomapX(unit->pItemPath, ItemRarityColor[7], 3);
+                }
+                else if (unit->pItemData->dwQuality > 3 || (unit->pItemData->dwFlags & 0x400800 && unit->pItemData->dwQuality > 2 && D2::GetUnitStat(unit, 194, 0) >= 2)) { // @todo check number of sockets
                     DrawAutomapX(unit->pItemPath, ItemRarityColor[unit->pItemData->dwQuality], 3);
                 }
                 else {
@@ -181,27 +225,6 @@ void gameAutomapPostDraw() {
                 }
                 else {
                     DrawAutomapX(unit->pPath, 0x1B);
-                }
-            }
-        }
-    }
-
-    if (drawDebug) {
-        D2::Types::UnitAny* player = D2::GetPlayerUnit();
-        if (player) {
-            D2::Types::Level* level = player->pPath->pRoom1->pRoom2->pLevel;
-            if (level) {
-                // Loop trough all rooms of current lvl
-                for (D2::Types::Room2* room = player->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room; room = room->pRoom2Next) {
-                    if (room->pPreset) {
-                        // Loop trough presets of current lvl
-                        for (D2::Types::PresetUnit* ps = room->pPreset; ps; ps = ps->pPresetNext) {
-                            //@ToDo; figure out which dots are important and which aren't
-                            // for now all we do is draw a green dot
-                            DrawDot(WorldToAutomap({ (double)room->dwPosX * 5 + ps->dwPosX, (double)room->dwPosY * 5 + ps->dwPosY }), 0x83);
-                        }
-                    }
-
                 }
             }
         }
@@ -249,6 +272,7 @@ void gameLoop() {
 
 void oogPostDraw() {
     drawBranding(false);
+    //D2::DrawRectangle(400, 300, 500, 400, 131, 0xff);
 }
 
 void oogLoop() {
@@ -276,13 +300,13 @@ struct DeferredPatch {
 void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     // override the entire sleepy section - 32 bytes long
     MemoryPatch(D2::GameLoopPatch)
-        << CALL(gameLoop)
+        << CALL(_gameLoop)
         << CALL(_throttle)
         << BYTES(ASM::NOP, 22);
 
     // override the entire sleepy section - 23 bytes long
     MemoryPatch(D2::oogLoopPatch)
-        << CALL(oogLoop)
+        << CALL(_oogLoop)
         << CALL(_throttle)
         << BYTES(ASM::NOP, 13);
 
@@ -299,28 +323,42 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
 
     *D2::NoPickUp = true;
 
-    ChatInputCallbacks[L"/toggle"] = ChatInputCallbacks[L"~toggle"] = [](std::wstring cmd, InputStream wchat) -> BOOL {
+    ChatInputCallbacks[L"/toggle"] = [](std::wstring cmd, InputStream wchat) -> BOOL {
         std::wstring param;
         wchat >> param;
 
         if (wchat) {
             if (param == L"debug") {
-                drawDebug = !drawDebug;
-                MemoryPatch(D2::EnableDebugPrint) << drawDebug; // Enable in-game debug prints
+                debugMode = !debugMode;
+                MemoryPatch(D2::EnableDebugPrint) << debugMode; // Enable in-game debug prints
+                if (debugMode) {
+                    D2::wprintf(2, L"Debugging on.");
+                }
+                else {
+                    D2::wprintf(1, L"Debugging off.");
+                }
                 return FALSE;
             }
             else if (param == L"swatch") {
                 drawSwatch = !drawSwatch;
+                if (drawSwatch) {
+                    D2::wprintf(2, L"Swatch on.");
+                }
+                else {
+                    D2::wprintf(1, L"Swatch off.");
+                }
                 return FALSE;
             }
         }
 
-        wcout << "Usage: " << cmd << " param" << endl << "Example: " << cmd << " debug" << endl << "Available flags: debug, swatch" << endl << endl;
+        D2::wprintf(3, L"Usage: %ls flag", cmd.c_str());
+        D2::wprintf(3, L"Example: %ls debug", cmd.c_str());
+        D2::wprintf(3, L"Available flags: debug, swatch");
 
         return FALSE;
     };
 
-    ChatInputCallbacks[L"/patch"] = ChatInputCallbacks[L"~patch"] = [](std::wstring cmd, InputStream wchat) -> BOOL {
+    ChatInputCallbacks[L"/patch"] = [](std::wstring cmd, InputStream wchat) -> BOOL {
         DWORD address;
         int size;
         unsigned long long value;
@@ -331,7 +369,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
         if (wchat) {
             wchat >> possible;
             if (!wchat) {
-                wcout << "No data specified" << endl;
+                D2::wprintf(3, L"No data specified.");
                 goto usage;
             }
 
@@ -344,12 +382,12 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
                         data.push_back({ size, value });
                     }
                     else {
-                        wcout << "Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!" << endl;
+                        D2::wprintf(3, L"Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!");
                         goto usage;
                     }
                 }
                 else {
-                    wcout << "Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!" << endl;
+                    D2::wprintf(3, L"Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!");
                     goto usage;
                 }
                 wchat >> possible;
@@ -371,7 +409,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
                     patch << (long long)patchdata.value;
                     break;
                 default:
-                    wcout << "Nishi, your code is stupid. Please write it correctly." << endl;
+                    D2::wprintf(3, L"Nishi, your code is stupid. Please write it correctly.");
                     return FALSE;
                 }
             }
@@ -381,16 +419,18 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
 
         usage:
 
-        wcout << "Usage: " << cmd << " address data [data ...]" << endl << "Example: " << cmd << " 7BB3A4 00000001" << endl << endl;
+        D2::wprintf(3, L"Example: %ls 7BB3A4 00000001", cmd.c_str());
+        D2::wprintf(3, L"Usage: %ls address data [data ...]", cmd.c_str());
 
         return FALSE;
     };
 
-    cout << "Charon loaded. Available commands:" << endl;
+    D2::wprintf(0, L"Charon loaded. Available commands:");
+    D2::wprintf(3, L"");
 
     for (const InputCallbackPair& kv : ChatInputCallbacks) {
-        wcout << endl << "  " << kv.first;
+        D2::wprintf(3, L"  %ls", kv.first.c_str());
     }
 
-    cout << endl << endl;
+    D2::wprintf(3, L"");
 }

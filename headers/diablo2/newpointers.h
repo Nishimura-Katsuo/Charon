@@ -48,4 +48,7 @@ namespace D2 {
     XREF<Offset::Base, DWORD __stdcall (), 0xF5160> GetScreenMode;                          // Updated 1.14d //004F5160-BASE
     XREF<Offset::D2CLIENT, long __fastcall (VOID), 0x5AFC0> GetMouseXOffset;               // Updated 1.14d //0045AFC0-BASE
     XREF<Offset::D2CLIENT, long __fastcall (VOID), 0x5AFB0> GetMouseYOffset;               // Updated 1.14d //0045AFB0-BASE
+    XREF<Offset::D2GFX, void __stdcall (int X1, int Y1, int X2, int Y2, DWORD dwColor, DWORD dwUnk), 0xF6300> DrawRectangle;        // Updated 1.14d //004F6300-BASE
+    XREF<Offset::D2GFX, void __stdcall (int X1, int Y1, int X2, int Y2, DWORD dwColor, DWORD dwUnk), 0xF6340> DrawRectangleB;       // Updated 1.14d //004F6340-BASE
+    XREF<Offset::D2GFX, void __stdcall (int X1, int Y1, int X2, int Y2, DWORD dwColor, DWORD dwUnk), 0xF6380> DrawLine;             // Updated 1.14d //004F6380-BASE
 }

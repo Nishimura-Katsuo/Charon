@@ -1,13 +1,12 @@
+#define _USE_MATH_DEFINES
+
 #include "../headers/common.h"
 #include "../headers/diablo2/utilities.h"
 #include <iostream>
 #include <cmath>
 
-using std::cout;
-using std::endl;
-
 DPOINT xvector = { 16.0, 8.0 }, yvector = { -16.0, 8.0 };
-std::map<DWORD, std::vector<FoundExit>> RevealedExits;
+std::map<int, std::vector<FoundExit>> RevealedExits;
 
 void DrawLine(POINT a, POINT b, DWORD dwColor) {
     D2::DrawLine(a.x, a.y, b.x, b.y, dwColor, 0xFF);
@@ -42,6 +41,20 @@ void DrawDot(POINT pos, DWORD dwColor) {
     DrawLine({ pos.x, pos.y - 1 }, { pos.x, pos.y + 1 }, dwColor);
 }
 
+void DrawAutomapX(DPOINT arg, DWORD dwColor, double size) {
+    POINT a = WorldToAutomap({ (double)arg.x - size, (double)arg.y }), b = WorldToAutomap({ (double)arg.x + size, (double)arg.y });
+    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
+    a = WorldToAutomap({ (double)arg.x, (double)arg.y - size }), b = WorldToAutomap({ (double)arg.x, (double)arg.y + size });
+    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
+}
+
+void DrawWorldX(DPOINT arg, DWORD dwColor, double size) {
+    POINT a = WorldToScreen({ (double)arg.x - size, (double)arg.y }), b = WorldToScreen({ (double)arg.x + size, (double)arg.y });
+    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
+    a = WorldToScreen({ (double)arg.x, (double)arg.y - size }), b = WorldToScreen({ (double)arg.x, (double)arg.y + size });
+    DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
+}
+
 void DrawAutomapX(D2::Types::ItemPath* arg, DWORD dwColor, double size) {
     POINT a = WorldToAutomap({ (double)arg->dwPosX - size, (double)arg->dwPosY }), b = WorldToAutomap({ (double)arg->dwPosX + size, (double)arg->dwPosY });
     DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
@@ -50,9 +63,9 @@ void DrawAutomapX(D2::Types::ItemPath* arg, DWORD dwColor, double size) {
 }
 
 void DrawWorldX(D2::Types::ItemPath* arg, DWORD dwColor, double size) {
-    POINT a = WorldToScreen({ (double)arg->dwPosX - size, (double)arg->dwPosY }), b = WorldToAutomap({ (double)arg->dwPosX + size, (double)arg->dwPosY });
+    POINT a = WorldToScreen({ (double)arg->dwPosX - size, (double)arg->dwPosY }), b = WorldToScreen({ (double)arg->dwPosX + size, (double)arg->dwPosY });
     DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
-    a = WorldToScreen({ (double)arg->dwPosX, (double)arg->dwPosY - size }), b = WorldToAutomap({ (double)arg->dwPosX, (double)arg->dwPosY + size });
+    a = WorldToScreen({ (double)arg->dwPosX, (double)arg->dwPosY - size }), b = WorldToScreen({ (double)arg->dwPosX, (double)arg->dwPosY + size });
     DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
 }
 
@@ -68,6 +81,78 @@ void DrawWorldX(D2::Types::Path* arg, DWORD dwColor, double size) {
     DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
     a = WorldToScreen(arg, { 0, -size }), b = WorldToScreen(arg, { 0, size });
     DrawLine({ a.x, a.y }, { b.x, b.y }, dwColor);
+}
+
+template <int len>
+void DrawAutomapShape(DPOINT points[len], DWORD dwColor) {
+    POINT pos[2];
+
+    pos[0] = WorldToAutomap(points[len - 1]);
+    pos[1] = WorldToAutomap(points[0]);
+    DrawLine(pos[0], pos[1], dwColor);
+
+    for (int c = 1; c < len; c++) {
+        pos[0] = pos[1];
+        pos[1] = WorldToAutomap(points[c]);
+        DrawLine(pos[0], pos[1], dwColor);
+    }
+}
+
+template <int len>
+void DrawWorldShape(DPOINT points[len], DWORD dwColor) {
+    POINT pos[2];
+
+    pos[0] = WorldToScreen(points[len - 1]);
+    pos[1] = WorldToScreen(points[0]);
+    DrawLine(pos[0], pos[1], dwColor);
+
+    for (int c = 1; c < len; c++) {
+        pos[0] = pos[1];
+        pos[1] = WorldToScreen(points[c]);
+        DrawLine(pos[0], pos[1], dwColor);
+    }
+}
+
+void DrawAutomapRadialShape(DPOINT center, int radius, int sides, DWORD dwColor, double angle) {
+    POINT pos[2];
+    double interval = M_PI * 2 / sides, i = angle;
+
+    pos[0] = WorldToAutomap({ center.x + cos(i) * radius, center.y + sin(i) * radius });
+    i += interval;
+    pos[1] = WorldToAutomap({ center.x + cos(i) * radius, center.y + sin(i) * radius });
+    i += interval;
+    DrawLine(pos[0], pos[1], dwColor);
+
+    for (int c = 1; c < sides; c++, i += interval) {
+        pos[0] = pos[1];
+        pos[1] = WorldToAutomap({ center.x + cos(i) * radius, center.y + sin(i) * radius });
+        DrawLine(pos[0], pos[1], dwColor);
+    }
+}
+
+void DrawAutomapRadialShape(DPOINT center, int radius, int sides, DWORD dwColor, DPOINT target) {
+    DrawAutomapRadialShape(center, radius, sides, dwColor, atan2(target.y - center.y, target.x - center.x));
+}
+
+void DrawWorldRadialShape(DPOINT center, int radius, int sides, DWORD dwColor, double angle) {
+    POINT pos[2];
+    double interval = M_PI * 2 / sides, i = angle;
+
+    pos[0] = WorldToScreen({ center.x + cos(i) * radius, center.y + sin(i) * radius });
+    i += interval;
+    pos[1] = WorldToScreen({ center.x + cos(i) * radius, center.y + sin(i) * radius });
+    i += interval;
+    DrawLine(pos[0], pos[1], dwColor);
+
+    for (int c = 1; c < sides; c++, i += interval) {
+        pos[0] = pos[1];
+        pos[1] = WorldToScreen({ center.x + cos(i) * radius, center.y + sin(i) * radius });
+        DrawLine(pos[0], pos[1], dwColor);
+    }
+}
+
+void DrawWorldRadialShape(DPOINT center, int radius, int sides, DWORD dwColor, DPOINT target) {
+    DrawWorldRadialShape(center, radius, sides, dwColor, atan2(target.y - center.y, target.x - center.x));
 }
 
 DWORD unitHP(D2::Types::UnitAny* unit) {
@@ -94,8 +179,18 @@ void __fastcall CustomDebugPrint(DWORD unk, char* szMsg, DWORD color) {
     std::cout << (LPVOID)unk << " " << szMsg;
 }
 
-void CheckExits(D2::Types::Room2* room) {
-
+void CheckExits(D2::Types::Room2* current) {
+    FoundExit exit;
+    int x1 = 0, y1 = 0;
+    int x2 = 0, y2 = 0;
+ 
+    for (unsigned int c = 0; c < current->dwRoomsNear; c++) {
+        if (current->pLevel->dwLevelNo != current->pRoom2Near[c]->pLevel->dwLevelNo && (current->dwPosX == current->pRoom2Near[c]->dwPosX || current->dwPosY == current->pRoom2Near[c]->dwPosY)) {
+            exit.origin = { ((double)current->dwPosX + (double)current->dwSizeX / 2) * 5, ((double)current->dwPosY + (double)current->dwSizeY / 2) * 5 };
+            exit.target = { ((double)current->pRoom2Near[c]->dwPosX + (double)current->pRoom2Near[c]->dwSizeX / 2) * 5, ((double)current->pRoom2Near[c]->dwPosY + (double)current->pRoom2Near[c]->dwSizeY / 2) * 5 };
+            RevealedExits[current->pLevel->dwLevelNo].push_back(exit);
+        }
+    }
 }
 
 void RevealCurrentLevel() {
@@ -130,5 +225,49 @@ void RevealCurrentLevel() {
                 }
             }
         }
+    }
+}
+
+namespace D2 {
+    // This is based on the actual source for printf... uses varargs.
+    int __stdcall wprintf(int dwColor, const wchar_t* format, ...) {
+        va_list arg;
+        int done;
+
+        va_start(arg, format);
+        wchar_t buf[256];
+        done = vswprintf_s(buf, format, arg);
+        if (inGame) {
+            D2::PrintGameString(buf, dwColor);
+        }
+        else {
+            _putws(buf);
+        }
+        va_end(arg);
+
+        return done;
+    }
+
+    // This is based on the actual source for printf... uses varargs.
+    int __stdcall debugwprintf(const wchar_t* format, ...) {
+        if (debugMode) {
+            va_list arg;
+            int done;
+
+            va_start(arg, format);
+            wchar_t buf[256];
+            done = vswprintf_s(buf, format, arg);
+            if (inGame && debugMode) {
+                D2::PrintGameString(buf, 4);
+            }
+            else {
+                _putws(buf);
+            }
+            va_end(arg);
+
+            return done;
+        }
+
+        return 0;
     }
 }

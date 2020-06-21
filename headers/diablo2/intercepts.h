@@ -18,6 +18,8 @@ void _gameDraw();
 void _throttle();
 void _gameAutomapDraw();
 void _preDrawUnitsPatch();
+void _gameLoop();
+void _oogLoop();
 int __stdcall printf_newline(const char* format, ...);
 namespace D2 {
     extern int ScreenWidth, ScreenHeight;
