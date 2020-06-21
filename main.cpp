@@ -5,6 +5,7 @@
 #include "headers/common.h"
 
 bool debugMode = false, drawSwatch = false;
+extern bool drawNoFloor; // written in intercepts
 wchar_t wHex[] = L"0123456789ABCDEF";
 const wchar_t* align[] = { L"Hostile", L"Neutral", L"Friendly" };
 InputCallbackMap ChatInputCallbacks;
@@ -31,7 +32,7 @@ void gameUnitPreDraw() {
 
         for (x = 0; x < coll->dwSizeGameX; x++) {
             for (y = 0; y < coll->dwSizeGameY; y++) {
-                color = coll->getCollision(x, y, 0x6) ? 0x62 : coll->getCollision(x, y, 0x405) ? 0x4B : 0x18;
+                color = coll->getCollision(x, y, 0x6) ? 0x62 : ((coll->getCollision(x,y, 0b10000) ? 0x04 : coll->getCollision(x, y, 0x405) ? 0x4B : 0x18));
                 DrawWorldX({ (double)coll->dwPosGameX + (double)x + 0.5, (double)coll->dwPosGameY + (double)y + 0.5 }, color, 0.5);
             }
         }
@@ -41,7 +42,7 @@ void gameUnitPreDraw() {
             p = coll->pMapStart;
             for (x = 0; x < coll->dwSizeGameX; x++) {
                 for (y = 0; y < coll->dwSizeGameY; y++) {
-                    color = coll->getCollision(x, y, 0x6) ? 0x62 : coll->getCollision(x, y, 0x405) ? 0x4B : 0x18;
+                    color = coll->getCollision(x, y, 0x6) ? 0x62 : ((coll->getCollision(x, y, 0b10000) ? 0x04 : coll->getCollision(x, y, 0x405) ? 0x4B : 0x18));
                     DrawWorldX({ (double)coll->dwPosGameX + (double)x + 0.5, (double)coll->dwPosGameY + (double)y + 0.5 }, color, 0.5);
                 }
             }
@@ -321,6 +322,8 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::ShakePatch) << ASM::RET; // Ignore shaking requests
     MemoryPatch(D2::DisableBattleNetPatch) << ASM::RET; // Prevent battle.net connections
 
+    MemoryPatch(D2::DrawNoFloorPatch) << CALL(_drawFloor);
+
     *D2::NoPickUp = true;
 
     ChatInputCallbacks[L"/toggle"] = [](std::wstring cmd, InputStream wchat) -> BOOL {
@@ -348,12 +351,15 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
                     D2::wprintf(1, L"Swatch off.");
                 }
                 return FALSE;
+            } else if (param == L"floor") {
+                drawNoFloor = !drawNoFloor;
+                return FALSE;
             }
         }
 
         D2::wprintf(3, L"Usage: %ls flag", cmd.c_str());
         D2::wprintf(3, L"Example: %ls debug", cmd.c_str());
-        D2::wprintf(3, L"Available flags: debug, swatch");
+        D2::wprintf(3, L"Available flags: debug, swatch, floor");
 
         return FALSE;
     };

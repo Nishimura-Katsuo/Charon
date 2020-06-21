@@ -427,6 +427,12 @@ VARPTR(Base, CurrentWaypointMenuTab, DWORD, 0x3BF086)           //007BF086-BASE
 VARPTR(Base, DrawFPS, BOOL, 0x3BB3A4)                           //007BB3A4-BASE
 
 FUNCPTR(Base, DrawAutomap, void __fastcall, (), 0x5ad60)        // NEW 1.14d //0045ad60-BASE
+//ASMPTR(Base, DrawNoFloorTest, 0x76BC0)                         //00476BC0-BASE
+
+// For floor patching
+ASMPTR(Base, DrawNoFloorPatch, 0x76CDC)                         //00476BE0-BASE
+ASMPTR(Base, DrawFloor, 0xDED10)                                //004DED10-BASE
+
 ASMPTR(Base, DrawGameServerIpPatch, 0x5ADC7)                    //0045ADC7-BASE
 ASMPTR(Base, GameLoopPatch, 0x51C2A)                            //00451C2A-BASE
 ASMPTR(Base, oogLoopPatch, 0xFA663)                             //004FA663-BASE
@@ -443,6 +449,6 @@ ASMPTR(Base, NullDebugPrintf, 0x11A480)                         //0051A480-BASE
 ASMPTR(Base, PreDrawUnitsPatch, 0x76ce1)                        //00476ce1-BASE
 ASMPTR(Base, SomethingBeforeDrawUnits, 0x73c00)                 //00473c00-BASE
 ASMPTR(Base, DrawWorldEndPatch, 0x76d31)                        //00476d31-BASE
-ASMPTR(Base, ShakePatch, 0x76D40)                         //00476D40-BASE
+ASMPTR(Base, ShakePatch, 0x76D40)                               //00476D40-BASE
 
 FUNCPTR(Base, GetUnitName, wchar_t* __fastcall, (D2::Types::UnitAny *unit), 0x64a60)                             //00464a60-BASE
