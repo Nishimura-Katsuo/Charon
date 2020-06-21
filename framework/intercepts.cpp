@@ -109,3 +109,17 @@ int __stdcall printf_newline(const char* format, ...) {
 
 	return done;
 }
+
+bool drawNoFloor = 0;
+void __declspec(naked) _drawFloor() {
+	//std::cout << "here" << showFloor << std::endl;
+	__asm {
+		cmp drawNoFloor, 1
+		JE block
+		
+		jmp [D2::DrawFloor]
+
+		block:
+		ret;
+	}
+}
