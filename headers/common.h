@@ -34,3 +34,5 @@ typedef std::function<BOOL(std::wstring, InputStream)> InputCallback;
 typedef std::unordered_map<std::wstring, InputCallback> InputCallbackMap;
 typedef InputCallbackMap::iterator InputMapIterator;
 typedef std::pair<std::wstring, InputCallback> InputCallbackPair;
+
+extern bool inGame;
