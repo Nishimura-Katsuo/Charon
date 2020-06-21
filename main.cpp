@@ -271,6 +271,22 @@ void gameLoop() {
     // so idle time can be used to do more complex tasks.
 }
 
+std::vector<std::wstring(*)()> AutoMapInfoHooks = {};
+void gameDrawAutoMapInfo() {
+    std::wstring msg;
+    int i = 0;
+    for (auto func : AutoMapInfoHooks) {
+        auto msg = func();
+        wchar_t* tmpstr = _wcsdup(msg.c_str());
+
+        DWORD width = 0, height = 0, fileno = 1;
+        height = D2::GetTextSize(tmpstr, &width, &fileno);
+        D2::DrawGameText(tmpstr, D2::ScreenWidth - 16 - width, *D2::DrawAutoMapStatsOffsetY + (16 * i++), 4, 0);
+
+        free(tmpstr);
+    }
+}
+
 void oogPostDraw() {
     drawBranding(false);
     //D2::DrawRectangle(400, 300, 500, 400, 131, 0xff);
@@ -314,7 +330,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::PreDrawUnitsPatch) << CALL(_preDrawUnitsPatch); // Hook the unit draw
     MemoryPatch(D2::DrawWorldEndPatch) << JUMP(gameUnitPostDraw);
     MemoryPatch(D2::GameAutomapDrawPatch) << CALL(_gameAutomapDraw); // Hook the automap draw
-    MemoryPatch(D2::GameDrawPatch) << CALL(_gameDraw); // Hook the game draw
+    MemoryPatch(D2::GameDrawPatch) << CALL(_gameDraw); // Hook the game drawtest
     MemoryPatch(D2::oogDrawPatch) << CALL(_oogDraw); // Hook the oog draw
     MemoryPatch(D2::MultiPatch) << CALL(multi) << ASM::NOP; // Allow multiple windows open
     MemoryPatch(D2::ChatInputPatch) << CALL(_chatInput); // Intercept game input
@@ -323,6 +339,10 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::DisableBattleNetPatch) << ASM::RET; // Prevent battle.net connections
 
     MemoryPatch(D2::DrawNoFloorPatch) << CALL(_drawFloor);
+    
+    MemoryPatch(D2::test) << ASM::RET;
+
+    MemoryPatch(D2::DrawAutoMapInfo) << CALL(_drawAutoMapInfo);
 
     *D2::NoPickUp = true;
 
@@ -430,6 +450,10 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
 
         return FALSE;
     };
+
+    AutoMapInfoHooks.push_back([]() -> std::wstring {
+        return std::wstring(L"Charon v0.1");
+    });
 
     D2::wprintf(0, L"Charon loaded. Available commands:");
     D2::wprintf(3, L"");

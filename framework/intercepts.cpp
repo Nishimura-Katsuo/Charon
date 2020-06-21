@@ -94,6 +94,10 @@ void _gameLoop() {
 void _oogLoop() {
 	oogLoop();
 }
+void gameDrawAutoMapInfo();
+void _drawAutoMapInfo(DWORD size) {
+	gameDrawAutoMapInfo();
+}
 
 // This is based on the actual source for printf... uses varargs.
 int __stdcall printf_newline(const char* format, ...) {

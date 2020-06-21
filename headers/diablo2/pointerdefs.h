@@ -425,13 +425,17 @@ FUNCPTR(D2GAME, exit0, DWORD __fastcall, (), 0x576F)            // NEW 1.14d //0
 
 VARPTR(Base, CurrentWaypointMenuTab, DWORD, 0x3BF086)           //007BF086-BASE
 VARPTR(Base, DrawFPS, BOOL, 0x3BB3A4)                           //007BB3A4-BASE
+VARPTR(Base, CurrentLevelId, WORD, 0x3A3140)                    //007A3140-BASE
+VARPTR(Base, DrawAutoMapStatsOffsetY, int, 0x3A51BC)           //007A51BC-BASE
 
 FUNCPTR(Base, DrawAutomap, void __fastcall, (), 0x5ad60)        // NEW 1.14d //0045ad60-BASE
-//ASMPTR(Base, DrawNoFloorTest, 0x76BC0)                         //00476BC0-BASE
 
 // For floor patching
 ASMPTR(Base, DrawNoFloorPatch, 0x76CDC)                         //00476BE0-BASE
 ASMPTR(Base, DrawFloor, 0xDED10)                                //004DED10-BASE
+ASMPTR(Base, test, 0x55510)                                     //00455510-BASE
+
+ASMPTR(Base, DrawAutoMapInfo, 0x5ADE8)                         //0045ADE8-BASE
 
 ASMPTR(Base, DrawGameServerIpPatch, 0x5ADC7)                    //0045ADC7-BASE
 ASMPTR(Base, GameLoopPatch, 0x51C2A)                            //00451C2A-BASE
