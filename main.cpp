@@ -54,7 +54,7 @@ void gameUnitPreDraw() {
                     POINT pos = WorldToScreen(unit->pPath), target = WorldToScreen({ (double)unit->pPath->xTarget, (double)unit->pPath->yTarget });
 
                     if (pos.x >= 0 && pos.y >= 0 && pos.x < D2::ScreenWidth && pos.y < D2::ScreenHeight && target.x >= 0 && target.y >= 0 && target.x < D2::ScreenWidth && target.y < D2::ScreenHeight) {
-                        //DrawLine(pos, target, 0x99);
+                        DrawLine(pos, target, 0x99);
                     }
                 }
             }
@@ -162,7 +162,7 @@ void gameAutomapPostDraw() {
             }
 
             for (FoundExit exit : RevealedExits[level->dwLevelNo]) {
-                DrawLine(WorldToAutomap(exit.origin), WorldToAutomap(exit.target), 0x83);
+                //DrawLine(WorldToAutomap(exit.origin), WorldToAutomap(exit.target), 0x83);
             }
         }
     }
