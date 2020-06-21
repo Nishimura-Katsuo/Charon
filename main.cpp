@@ -330,7 +330,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::PreDrawUnitsPatch) << CALL(_preDrawUnitsPatch); // Hook the unit draw
     MemoryPatch(D2::DrawWorldEndPatch) << JUMP(gameUnitPostDraw);
     MemoryPatch(D2::GameAutomapDrawPatch) << CALL(_gameAutomapDraw); // Hook the automap draw
-    MemoryPatch(D2::GameDrawPatch) << CALL(_gameDraw); // Hook the game drawtest
+    MemoryPatch(D2::GameDrawPatch) << CALL(_gameDraw); // Hook the game draw
     MemoryPatch(D2::oogDrawPatch) << CALL(_oogDraw); // Hook the oog draw
     MemoryPatch(D2::MultiPatch) << CALL(multi) << ASM::NOP; // Allow multiple windows open
     MemoryPatch(D2::ChatInputPatch) << CALL(_chatInput); // Intercept game input
@@ -339,8 +339,6 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::DisableBattleNetPatch) << ASM::RET; // Prevent battle.net connections
 
     MemoryPatch(D2::DrawNoFloorPatch) << CALL(_drawFloor);
-    
-    MemoryPatch(D2::test) << ASM::RET;
 
     MemoryPatch(D2::DrawAutoMapInfo) << CALL(_drawAutoMapInfo);
 

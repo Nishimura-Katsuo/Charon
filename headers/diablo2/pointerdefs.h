@@ -433,7 +433,6 @@ FUNCPTR(Base, DrawAutomap, void __fastcall, (), 0x5ad60)        // NEW 1.14d //0
 // For floor patching
 ASMPTR(Base, DrawNoFloorPatch, 0x76CDC)                         //00476BE0-BASE
 ASMPTR(Base, DrawFloor, 0xDED10)                                //004DED10-BASE
-ASMPTR(Base, test, 0x55510)                                     //00455510-BASE
 
 ASMPTR(Base, DrawAutoMapInfo, 0x5ADE8)                         //0045ADE8-BASE
 
