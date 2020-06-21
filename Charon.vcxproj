@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="D2Structs.cpp" />
     <ClCompile Include="framework\dllmain.cpp" />
     <ClCompile Include="framework\hook.cpp" />
     <ClCompile Include="framework\intercepts.cpp" />
