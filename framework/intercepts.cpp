@@ -21,17 +21,24 @@ void __declspec(naked) _chatInput() {
 			ret
 	}
 }
-void __fastcall keyPressEvent(WPARAM wparam, LPARAM lparam);
+BOOL __fastcall keyPressEvent(WPARAM wparam, LPARAM lparam);
 void __declspec(naked) _keyPressIntercept() {
 	__asm {
-		
+
 		mov ecx, [edi + 0x08] //(wparam)
 		mov edx, [edi + 0x0c] //(lparam)
 
 		call keyPressEvent
-		//ToDo; implement blocking a key
-	
+		cmp eax, 0
+
+		// need a separated label for this, cant make that big of a jump in jne
+		jne block  // jump not equal
+
+		// not blocked
 		jmp [D2::keyPress_II]
+
+        block:
+		jmp [D2::keyPress_III] // block key for d2
 	}
 }
 
