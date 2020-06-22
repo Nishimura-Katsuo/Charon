@@ -71,12 +71,13 @@ void _throttle() {
 	static system_clock::time_point nextFrame = system_clock::now(), now;
 
 	now = system_clock::now();
-
-	while (nextFrame < now) {
+	if (now < nextFrame) {
+		sleep_until(nextFrame);
 		nextFrame += frameDuration{ 1 };
 	}
-
-	sleep_until(nextFrame);
+	else {
+		nextFrame = system_clock::now() + frameDuration{ 1 };
+	}
 }
 
 void gameAutomapPreDraw();
@@ -107,7 +108,9 @@ void _gameLoop() {
 void _oogLoop() {
 	oogLoop();
 }
+
 void gameDrawAutoMapInfo();
+
 void _drawAutoMapInfo(DWORD size) {
 	gameDrawAutoMapInfo();
 }
@@ -127,16 +130,8 @@ int __stdcall printf_newline(const char* format, ...) {
 	return done;
 }
 
-bool drawNoFloor = 0;
-void __declspec(naked) _drawFloor() {
-	//std::cout << "here" << showFloor << std::endl;
-	__asm {
-		cmp drawNoFloor, 1
-		JE block
-		
-		jmp [D2::DrawFloor]
-
-		block:
-		ret;
+void __fastcall _drawFloor(void *unknown) {
+	if (!debugMode) {
+		D2::DrawFloor(unknown);
 	}
 }

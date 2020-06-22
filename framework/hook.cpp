@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "../headers/hook.h"
 #include <iostream>
 
