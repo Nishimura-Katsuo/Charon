@@ -8,8 +8,45 @@
 DPOINT xvector = { 16.0, 8.0 }, yvector = { -16.0, 8.0 };
 std::map<int, std::vector<FoundExit>> RevealedExits;
 
+GameChat game;
+
+int GameChatBuffer::sync() {
+    if (!inGame) {
+        std::wcout << this->str();
+        this->str(L"");
+    }
+    else {
+        std::wstring::size_type start = 0;
+        std::wstring::size_type pos = this->str().find(L"\n");
+        while (pos != std::wstring::npos) {
+            std::wstring tmp = this->str().substr(start, pos - start);
+            D2::PrintGameString(tmp.c_str(), color);
+            start = pos + 1;
+            pos = this->str().find(L"\n", start);
+        }
+        if (start > 0) {
+            this->str(this->str().substr(start));
+        }
+    }
+    return 0;
+}
+
+GameChat::GameChat() : std::wostream(&buf) { }
+
+GameChat& GameChat::operator()(DWORD color) {
+    buf.color = color;
+    return *this;
+}
+
 void DrawLine(POINT a, POINT b, DWORD dwColor) {
-    D2::DrawLine(a.x, a.y, b.x, b.y, dwColor, 0xFF);
+    if (
+        a.x >= 0 && a.x < D2::ScreenWidth ||
+        b.x >= 0 && b.x < D2::ScreenWidth ||
+        a.y >= 0 && a.y < D2::ScreenHeight ||
+        b.y >= 0 && b.y < D2::ScreenHeight
+    ) {
+        D2::DrawLine(a.x, a.y, b.x, b.y, dwColor, 0xFF);
+    }
 }
 
 POINT WorldToScreen(DPOINT pos) {
@@ -225,49 +262,5 @@ void RevealCurrentLevel() {
                 }
             }
         }
-    }
-}
-
-namespace D2 {
-    // This is based on the actual source for printf... uses varargs.
-    int __stdcall wprintf(int dwColor, const wchar_t* format, ...) {
-        va_list arg;
-        int done;
-
-        va_start(arg, format);
-        wchar_t buf[256];
-        done = vswprintf_s(buf, format, arg);
-        if (inGame) {
-            D2::PrintGameString(buf, dwColor);
-        }
-        else {
-            _putws(buf);
-        }
-        va_end(arg);
-
-        return done;
-    }
-
-    // This is based on the actual source for printf... uses varargs.
-    int __stdcall debugwprintf(const wchar_t* format, ...) {
-        if (debugMode) {
-            va_list arg;
-            int done;
-
-            va_start(arg, format);
-            wchar_t buf[256];
-            done = vswprintf_s(buf, format, arg);
-            if (inGame && debugMode) {
-                D2::PrintGameString(buf, 4);
-            }
-            else {
-                _putws(buf);
-            }
-            va_end(arg);
-
-            return done;
-        }
-
-        return 0;
     }
 }
