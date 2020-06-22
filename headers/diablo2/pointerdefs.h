@@ -437,6 +437,7 @@ FUNCPTR(Base, DrawFloor, void __fastcall, (void *unknown), 0xDED10)          //0
 // keyPressPatches
 ASMPTR(Base, keyPress, 0x6A847)                              //0046A847-base
 ASMPTR(Base, keyPress_II, 0x6A854)                           //0046A854-base
+ASMPTR(Base, keyPress_III, 0x6A93B)                           //0046A93B-base
 
 ASMPTR(Base, DrawAutoMapInfo, 0x5ADE8)                          //0045ADE8-BASE
 ASMPTR(Base, DrawGameServerIpPatch, 0x5ADC7)                    //0045ADC7-BASE
