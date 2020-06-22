@@ -20,6 +20,8 @@ void _gameAutomapDraw();
 void _preDrawUnitsPatch();
 void _gameLoop();
 void _oogLoop();
+void __fastcall _drawFloor(void *unknown);
+void _drawAutoMapInfo(DWORD size);
 int __stdcall printf_newline(const char* format, ...);
 namespace D2 {
     extern int ScreenWidth, ScreenHeight;

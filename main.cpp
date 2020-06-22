@@ -2,22 +2,32 @@
  * Charon - For the finer life in Diablo 2.
  */
 
+#define _USE_MATH_DEFINES
 #include "headers/common.h"
+#include <cmath>
 
-bool debugMode = false, drawSwatch = false;
+std::wstring version = L"Charon v0.97";
+
+bool debugMode = true, drawSwatch = false, debugVerbose = false;
 wchar_t wHex[] = L"0123456789ABCDEF";
 const wchar_t* align[] = { L"Hostile", L"Neutral", L"Friendly" };
-InputCallbackMap ChatInputCallbacks;
 DWORD currentLevel, revealDelay = 0;
+
+InputCallbackMap ChatInputCallbacks;
+typedef std::function<std::wstring()> AutomapInfoCallback;
+std::vector<AutomapInfoCallback> AutomapInfoHooks;
+
+DWORD gametime = 0;
 
 using std::hex;
 
 void drawBranding(bool inGame) {
-    WCHAR msgtext[] = L"Charon v0.1";
     DWORD width = 0, height = 0, fileno = 1;
 
-    height = D2::GetTextSize(msgtext, &width, &fileno);
-    D2::DrawGameText(msgtext, D2::ScreenWidth - width - 5, D2::ScreenHeight - 5, inGame ? 0 : 4, 0);
+    if (!inGame) {
+        height = D2::GetTextSize(version.c_str(), &width, &fileno);
+        D2::DrawGameText(version.c_str(), D2::ScreenWidth - width - 5, D2::ScreenHeight - 5, inGame ? 0 : 4, 0);
+    }
 }
 
 void gameUnitPreDraw() {
@@ -31,7 +41,7 @@ void gameUnitPreDraw() {
 
         for (x = 0; x < coll->dwSizeGameX; x++) {
             for (y = 0; y < coll->dwSizeGameY; y++) {
-                color = coll->getCollision(x, y, 0x6) ? 0x62 : coll->getCollision(x, y, 0x405) ? 0x4B : 0x18;
+                color = coll->getCollision(x, y, 0x4) ? 0x62 : coll->getCollision(x, y, 0xC09) ? 0x4B : coll->getCollision(x, y, 0x180) ? 0x8E : coll->getCollision(x, y, 0x10) ? 0x4 : 0x18;
                 DrawWorldX({ (double)coll->dwPosGameX + (double)x + 0.5, (double)coll->dwPosGameY + (double)y + 0.5 }, color, 0.5);
             }
         }
@@ -41,7 +51,7 @@ void gameUnitPreDraw() {
             p = coll->pMapStart;
             for (x = 0; x < coll->dwSizeGameX; x++) {
                 for (y = 0; y < coll->dwSizeGameY; y++) {
-                    color = coll->getCollision(x, y, 0x6) ? 0x62 : coll->getCollision(x, y, 0x405) ? 0x4B : 0x18;
+                    color = coll->getCollision(x, y, 0x4) ? 0x62 : coll->getCollision(x, y, 0xC09) ? 0x4B : coll->getCollision(x, y, 0x180) ? 0x8E : coll->getCollision(x, y, 0x10) ? 0x4 : 0x18;
                     DrawWorldX({ (double)coll->dwPosGameX + (double)x + 0.5, (double)coll->dwPosGameY + (double)y + 0.5 }, color, 0.5);
                 }
             }
@@ -100,7 +110,7 @@ void gameUnitPostDraw() {
     BYTE d;
 
     // Server side tracks enemies
-    if (debugMode) {
+    if (debugMode && debugVerbose) {
         wchar_t msg[512];
         DWORD fontNum = 12, width = 0, height = 0;
         D2::SetFont(fontNum);
@@ -154,7 +164,7 @@ void gameAutomapPostDraw() {
                         //@ToDo; figure out which dots are important and which aren't
                         // for now all we do is draw a green dot
                         if (ps->dwType == 5) {
-                            DrawAutomapRadialShape({ (double)room->dwPosX * 5 + ps->dwPosX, (double)room->dwPosY * 5 + ps->dwPosY }, 4, 9, 0x83);
+                            DrawAutomapRadialShape({ (double)room->dwPosX * 5 + ps->dwPosX, (double)room->dwPosY * 5 + ps->dwPosY }, 4, 8, 0x83, M_PI / 8);
                         }
                     }
                 }
@@ -252,6 +262,9 @@ void gamePostDraw() {
 }
 
 void gameLoop() {
+    if (!gametime) {
+        gametime = GetTickCount();
+    }
     D2::Types::UnitAny* me = D2::PlayerUnit[0];
 
     if (me && me->pPath && me->pPath->pRoom1 && me->pPath->pRoom1->pRoom2 && me->pPath->pRoom1->pRoom2->pLevel) {
@@ -270,6 +283,17 @@ void gameLoop() {
     // so idle time can be used to do more complex tasks.
 }
 
+void gameDrawAutoMapInfo() {
+    DWORD width = 0, height = 0, fileno = 1;
+    height = D2::GetTextSize(L"test", &width, &fileno);
+    DWORD bottom = *D2::DrawAutoMapStatsOffsetY - height;
+    for (AutomapInfoCallback func : AutomapInfoHooks) {
+        std::wstring msg = func();
+        bottom += D2::GetTextSize(msg.c_str(), &width, &fileno);
+        D2::DrawGameText(msg.c_str(), D2::ScreenWidth - 16 - width, bottom, 4, 0);
+    }
+}
+
 void oogPostDraw() {
     drawBranding(false);
     //D2::DrawRectangle(400, 300, 500, 400, 131, 0xff);
@@ -277,6 +301,7 @@ void oogPostDraw() {
 
 void oogLoop() {
     currentLevel = 0;
+    gametime = 0;
     // Out of game logic goes here.
 }
 
@@ -320,6 +345,8 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::NullDebugPrintf) << JUMP(printf_newline); // Enable even more console debug prints
     MemoryPatch(D2::ShakePatch) << ASM::RET; // Ignore shaking requests
     MemoryPatch(D2::DisableBattleNetPatch) << ASM::RET; // Prevent battle.net connections
+    MemoryPatch(D2::DrawNoFloorPatch) << CALL(_drawFloor);
+    MemoryPatch(D2::DrawAutoMapInfo) << CALL(_drawAutoMapInfo);
 
     *D2::NoPickUp = true;
 
@@ -332,28 +359,28 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
                 debugMode = !debugMode;
                 MemoryPatch(D2::EnableDebugPrint) << debugMode; // Enable in-game debug prints
                 if (debugMode) {
-                    D2::wprintf(2, L"Debugging on.");
+                    game(2) << "Debugging on." << std::endl;
                 }
                 else {
-                    D2::wprintf(1, L"Debugging off.");
+                    game(1) << "Debugging off." << std::endl;
                 }
                 return FALSE;
             }
             else if (param == L"swatch") {
                 drawSwatch = !drawSwatch;
                 if (drawSwatch) {
-                    D2::wprintf(2, L"Swatch on.");
+                    game(2) << "Swatch on." << std::endl;
                 }
                 else {
-                    D2::wprintf(1, L"Swatch off.");
+                    game(1) << "Swatch off." << std::endl;
                 }
                 return FALSE;
             }
         }
 
-        D2::wprintf(3, L"Usage: %ls flag", cmd.c_str());
-        D2::wprintf(3, L"Example: %ls debug", cmd.c_str());
-        D2::wprintf(3, L"Available flags: debug, swatch");
+        game(3) << "Usage: " << cmd << " flag" << std::endl
+            << "Example: " << cmd << " debug" << std::endl
+            << "Available flags: debug, swatch" << std::endl;
 
         return FALSE;
     };
@@ -369,7 +396,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
         if (wchat) {
             wchat >> possible;
             if (!wchat) {
-                D2::wprintf(3, L"No data specified.");
+                game(3) << "No data specified." << std::endl;
                 goto usage;
             }
 
@@ -382,12 +409,12 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
                         data.push_back({ size, value });
                     }
                     else {
-                        D2::wprintf(3, L"Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!");
+                        game(3) << "Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!" << std::endl;
                         goto usage;
                     }
                 }
                 else {
-                    D2::wprintf(3, L"Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!");
+                    game(3) << "Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!" << std::endl;
                     goto usage;
                 }
                 wchat >> possible;
@@ -409,7 +436,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
                     patch << (long long)patchdata.value;
                     break;
                 default:
-                    D2::wprintf(3, L"Nishi, your code is stupid. Please write it correctly.");
+                    game(3) << "Nishi, your code is stupid. Please write it correctly." << std::endl;
                     return FALSE;
                 }
             }
@@ -419,18 +446,28 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
 
         usage:
 
-        D2::wprintf(3, L"Example: %ls 7BB3A4 00000001", cmd.c_str());
-        D2::wprintf(3, L"Usage: %ls address data [data ...]", cmd.c_str());
+        game(3) << "Example: " << cmd << " 7BB3A4 00000001" << std::endl
+            << "Usage: " << cmd << " address data [data ...]" << std::endl;
 
         return FALSE;
     };
 
-    D2::wprintf(0, L"Charon loaded. Available commands:");
-    D2::wprintf(3, L"");
+    AutomapInfoHooks.push_back([]() -> std::wstring {
+        return version;
+    });
+
+    AutomapInfoHooks.push_back([]() -> std::wstring {
+        DWORD elapsed = GetTickCount() - gametime, seconds = (elapsed / 1000) % 60, minutes = (elapsed / 60000) % 60;
+        wchar_t msg[16];
+        swprintf_s(msg, L"%d:%02d", minutes, seconds);
+        return msg;
+    });
+
+    game(3) << "Charon loaded. Available commands:" << std::endl << std::endl;
 
     for (const InputCallbackPair& kv : ChatInputCallbacks) {
-        D2::wprintf(3, L"  %ls", kv.first.c_str());
+        game(3) << "  " << kv.first << std::endl;
     }
 
-    D2::wprintf(3, L"");
+    game(3) << std::endl;
 }

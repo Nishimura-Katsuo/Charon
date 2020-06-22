@@ -1,7 +1,10 @@
+#define _USE_MATH_DEFINES
+
 #pragma once
 
 #include "D2Structs.h"
 #include <map>
+#include <cmath>
 
 extern DPOINT xvector, yvector;
 extern bool debugMode, drawSwatch;
@@ -32,7 +35,18 @@ void __fastcall CustomDebugPrint(DWORD unk, char* szMsg, DWORD color);
 void RevealCurrentLevel();
 extern std::map<int, std::vector<FoundExit>> RevealedExits;
 
-namespace D2 {
-    int __stdcall wprintf(int dwColor, const wchar_t* format, ...);
-    int __stdcall debugwprintf(const wchar_t* format, ...);
-}
+class GameChatBuffer : public std::wstringbuf
+{
+public:
+    DWORD color = 0;
+    virtual int sync();
+};
+
+class GameChat : public std::wostream {
+    GameChatBuffer buf;
+public:
+    GameChat();
+    GameChat& operator()(DWORD color);
+};
+
+extern GameChat game;

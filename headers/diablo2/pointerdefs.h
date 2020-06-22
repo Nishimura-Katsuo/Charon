@@ -44,8 +44,8 @@ FUNCPTR(D2CLIENT, LeftClickItem_I, void __stdcall,
 (D2::Types::UnitAny* pPlayer, D2::Types::Inventory* pInventory, int x, int y, DWORD dwClickType, D2::Types::InventoryLayout* pLayout, DWORD Location),
 0x8FFE0) // Updated 1.14d //0048FFE0-BASE
 
-FUNCPTR(D2CLIENT, PrintGameString, void __fastcall, (wchar_t* wMessage, int nColor), 0x9E3A0)  // Updated 1.14d //0049E3A0-BASE
-FUNCPTR(D2CLIENT, PrintPartyString, void __fastcall, (wchar_t* wMessage, int nColor), 0x9E5C0) // Updated 1.14d //0049E5C0-BASE
+FUNCPTR(D2CLIENT, PrintGameString, void __fastcall, (const wchar_t* wMessage, int nColor), 0x9E3A0)  // Updated 1.14d //0049E3A0-BASE
+FUNCPTR(D2CLIENT, PrintPartyString, void __fastcall, (const wchar_t* wMessage, int nColor), 0x9E5C0) // Updated 1.14d //0049E5C0-BASE
 
 FUNCPTR(D2CLIENT, LeaveParty, void __fastcall, (void), 0x79FC0) // Updated 1.14d //00479FC0-BASE
 
@@ -384,7 +384,7 @@ FUNCPTR(D2WIN, LoadCellFile, D2::Types::CellFile* __fastcall, (const char* szFil
 
 FUNCPTR(D2WIN, TakeScreenshot, void __fastcall, (), 0xFA7A0)                                                               // Updated 1.14d //004FA7A0-BASE
 FUNCPTR(D2WIN, DrawGameText, void __fastcall, (const wchar_t* wStr, int xPos, int yPos, DWORD dwColor, BOOL bMultiLineCenterFlag), 0x102320) // Updated 1.14d //00502320-BASE
-FUNCPTR(D2WIN, GetTextSize, DWORD __fastcall, (wchar_t* wStr, DWORD* dwWidth, DWORD* dwFileNo), 0x102520)                 // Updated 1.14d //00502520-BASE
+FUNCPTR(D2WIN, GetTextSize, DWORD __fastcall, (const wchar_t* wStr, DWORD* dwWidth, DWORD* dwFileNo), 0x102520)                 // Updated 1.14d //00502520-BASE
 FUNCPTR(D2WIN, SetFont, DWORD __fastcall, (DWORD dwFileNo), 0x102EF0)                                                    // Updated 1.14d //00502EF0-BASE
 FUNCPTR(D2WIN, DestroyEditBox, DWORD __fastcall, (D2::Types::Control* box), 0xFDAA0)                                                 // Updated 1.14d //004FDAA0-BASE
 FUNCPTR(D2WIN, DestroyControl, VOID __stdcall, (D2::Types::Control* pControl), 0xf95c0)                                              // Updated 1.14d // 004f95c0-BASE
@@ -425,8 +425,17 @@ FUNCPTR(D2GAME, exit0, DWORD __fastcall, (), 0x576F)            // NEW 1.14d //0
 
 VARPTR(Base, CurrentWaypointMenuTab, DWORD, 0x3BF086)           //007BF086-BASE
 VARPTR(Base, DrawFPS, BOOL, 0x3BB3A4)                           //007BB3A4-BASE
+VARPTR(Base, CurrentLevelId, WORD, 0x3A3140)                    //007A3140-BASE
+VARPTR(Base, DrawAutoMapStatsOffsetY, int, 0x3A51BC)           //007A51BC-BASE
 
 FUNCPTR(Base, DrawAutomap, void __fastcall, (), 0x5ad60)        // NEW 1.14d //0045ad60-BASE
+
+// For floor patching
+ASMPTR(Base, DrawNoFloorPatch, 0x76CDC)                         //00476BE0-BASE
+FUNCPTR(Base, DrawFloor, void __fastcall, (void *unknown), 0xDED10)          //004DED10-BASE
+
+ASMPTR(Base, DrawAutoMapInfo, 0x5ADE8)                         //0045ADE8-BASE
+
 ASMPTR(Base, DrawGameServerIpPatch, 0x5ADC7)                    //0045ADC7-BASE
 ASMPTR(Base, GameLoopPatch, 0x51C2A)                            //00451C2A-BASE
 ASMPTR(Base, oogLoopPatch, 0xFA663)                             //004FA663-BASE
@@ -443,6 +452,6 @@ ASMPTR(Base, NullDebugPrintf, 0x11A480)                         //0051A480-BASE
 ASMPTR(Base, PreDrawUnitsPatch, 0x76ce1)                        //00476ce1-BASE
 ASMPTR(Base, SomethingBeforeDrawUnits, 0x73c00)                 //00473c00-BASE
 ASMPTR(Base, DrawWorldEndPatch, 0x76d31)                        //00476d31-BASE
-ASMPTR(Base, ShakePatch, 0x76D40)                         //00476D40-BASE
+ASMPTR(Base, ShakePatch, 0x76D40)                               //00476D40-BASE
 
 FUNCPTR(Base, GetUnitName, wchar_t* __fastcall, (D2::Types::UnitAny *unit), 0x64a60)                             //00464a60-BASE
