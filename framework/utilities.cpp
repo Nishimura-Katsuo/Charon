@@ -39,7 +39,14 @@ GameChat& GameChat::color(DWORD color) {
 }
 
 void DrawLine(POINT a, POINT b, DWORD dwColor) {
-    D2::DrawLine(a.x, a.y, b.x, b.y, dwColor, 0xFF);
+    if (
+        a.x >= 0 && a.x < D2::ScreenWidth ||
+        b.x >= 0 && b.x < D2::ScreenWidth ||
+        a.y >= 0 && a.y < D2::ScreenHeight ||
+        b.y >= 0 && b.y < D2::ScreenHeight
+    ) {
+        D2::DrawLine(a.x, a.y, b.x, b.y, dwColor, 0xFF);
+    }
 }
 
 POINT WorldToScreen(DPOINT pos) {
