@@ -58,12 +58,13 @@ void _throttle() {
 	static system_clock::time_point nextFrame = system_clock::now(), now;
 
 	now = system_clock::now();
-
-	while (nextFrame < now) {
+	if (now < nextFrame) {
+		sleep_until(nextFrame);
 		nextFrame += frameDuration{ 1 };
 	}
-
-	sleep_until(nextFrame);
+	else {
+		nextFrame = system_clock::now() + frameDuration{ 1 };
+	}
 }
 
 void gameAutomapPreDraw();
