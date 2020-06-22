@@ -322,6 +322,29 @@ struct DeferredPatch {
     unsigned long long value;
 };
 
+HotkeyCallbackMap HotkeyCallbacks;
+
+void __fastcall keyPressEvent(WPARAM wparam, LPARAM lparam) {
+
+    BOOL chatBox = inGame && D2::GetUiFlag(0x05);
+    BOOL escMenu = inGame && D2::GetUiFlag(0x09);
+
+    //std::cout << "chatbox: " << chatBox << "\t" << "escMenu: " << escMenu << "\t" << wparam <<"\t" << lparam << std::endl;
+
+    if (!chatBox && !escMenu) {
+
+        char keycode = static_cast<char>(wparam);
+
+        HotkeyMapIterator it = HotkeyCallbacks.find(keycode);
+        if (it != HotkeyCallbacks.end()) {
+            HotkeyCallback cb = it->second;
+            if (cb(lparam)) {
+                //ToDo; implement blocking a key
+            }
+        }
+    }
+}
+
 void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     // override the entire sleepy section - 32 bytes long
     MemoryPatch(D2::GameLoopPatch)
@@ -347,6 +370,9 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::DisableBattleNetPatch) << ASM::RET; // Prevent battle.net connections
     MemoryPatch(D2::DrawNoFloorPatch) << CALL(_drawFloor);
     MemoryPatch(D2::DrawAutoMapInfo) << CALL(_drawAutoMapInfo);
+
+    // Override the d2 internal function of pressing a key
+    MemoryPatch(D2::keyPress) << JUMP(_keyPressIntercept) << ASM::NOP;
 
     *D2::NoPickUp = true;
 
@@ -462,6 +488,12 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
         swprintf_s(msg, L"%d:%02d", minutes, seconds);
         return msg;
     });
+
+    HotkeyCallbacks[VK_F12] = [](LPARAM options) -> BOOL {
+        std::cout << "pressed f12" << std::endl;
+
+        return true;
+    };
 
     game(3) << "Charon loaded. Available commands:" << std::endl << std::endl;
 
