@@ -270,6 +270,22 @@ void gameLoop() {
     // so idle time can be used to do more complex tasks.
 }
 
+std::vector<std::wstring(*)()> AutoMapInfoHooks = {};
+void gameDrawAutoMapInfo() {
+    std::wstring msg;
+    int i = 0;
+    for (auto func : AutoMapInfoHooks) {
+        auto msg = func();
+        wchar_t* tmpstr = _wcsdup(msg.c_str());
+
+        DWORD width = 0, height = 0, fileno = 1;
+        height = D2::GetTextSize(tmpstr, &width, &fileno);
+        D2::DrawGameText(tmpstr, D2::ScreenWidth - 16 - width, *D2::DrawAutoMapStatsOffsetY + (16 * i++), 4, 0);
+
+        free(tmpstr);
+    }
+}
+
 void oogPostDraw() {
     drawBranding(false);
     //D2::DrawRectangle(400, 300, 500, 400, 131, 0xff);
@@ -321,6 +337,8 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::ShakePatch) << ASM::RET; // Ignore shaking requests
     MemoryPatch(D2::DisableBattleNetPatch) << ASM::RET; // Prevent battle.net connections
     MemoryPatch(D2::DrawNoFloorPatch) << CALL(_drawFloor);
+
+    MemoryPatch(D2::DrawAutoMapInfo) << CALL(_drawAutoMapInfo);
 
     *D2::NoPickUp = true;
 
@@ -426,6 +444,9 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
         return FALSE;
     };
 
+    AutoMapInfoHooks.push_back([]() -> std::wstring {
+        return std::wstring(L"Charon v0.1");
+    });
     game.color(3) << "Charon loaded. Available commands:" << std::endl << std::endl;
 
     for (const InputCallbackPair& kv : ChatInputCallbacks) {
