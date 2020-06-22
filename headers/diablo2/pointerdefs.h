@@ -21,7 +21,7 @@ FUNCPTR(D2CLIENT, LoadItemDesc, BOOL __stdcall, (D2::Types::UnitAny* pItem, int 
 FUNCPTR(D2CLIENT, GetMonsterOwner, DWORD __fastcall, (DWORD nMonsterId), 0x79150)                           // Updated 1.14d //00479150-BASE
 FUNCPTR(D2CLIENT, GetUnitHPPercent, DWORD __fastcall, (DWORD dwUnitId), 0x79080)                            // Updated 1.14d //00479080-BASE
 FUNCPTR(D2CLIENT, InitInventory, void __fastcall, (void), 0x845A0)                                          // Updated 1.14d //004845A0-BASE
-FUNCPTR(D2CLIENT, SetUIVar, DWORD __fastcall, (DWORD varno, DWORD howset, DWORD unknown1), 0x55F20)         // Updated 1.14d //00455F20-BASE
+FUNCPTR(D2CLIENT, SetUiFlag, DWORD __fastcall, (DWORD varno, DWORD howset, DWORD unknown1), 0x55F20)         // Updated 1.14d //00455F20-BASE
 FUNCPTR(D2CLIENT, GetUnitX, int __fastcall, (D2::Types::UnitAny* pUnit), 0x5ADF0)                                     // Updated 1.14d //0045ADF0-BASE
 FUNCPTR(D2CLIENT, GetUnitY, int __fastcall, (D2::Types::UnitAny* pUnit), 0x5AE20)                                     // Updated 1.14d //0045AE20-BASE
 
@@ -57,7 +57,7 @@ FUNCPTR(D2CLIENT, GetDifficulty, BYTE __stdcall, (), 0x4DCD0) // Updated 1.14d /
 
 FUNCPTR(D2CLIENT, ExitGame, void __fastcall, (void), 0x4DD60) // Updated 1.14d //0044DD60-BASE
 
-FUNCPTR(D2CLIENT, GetUiVar_I, DWORD __fastcall, (DWORD dwVarNo), 0x538D0) // Updated 1.14d //004538D0-BASE
+FUNCPTR(D2CLIENT, GetUiFlag, DWORD __fastcall, (DWORD dwVarNo), 0x538D0) // Updated 1.14d //004538D0-BASE
 
 FUNCPTR(D2CLIENT, DrawRectFrame, VOID __fastcall, (DWORD Rect), 0x52E50) // Updated 1.14d //00452E50-BASE
 
@@ -431,11 +431,14 @@ VARPTR(Base, DrawAutoMapStatsOffsetY, int, 0x3A51BC)           //007A51BC-BASE
 FUNCPTR(Base, DrawAutomap, void __fastcall, (), 0x5ad60)        // NEW 1.14d //0045ad60-BASE
 
 // For floor patching
-ASMPTR(Base, DrawNoFloorPatch, 0x76CDC)                         //00476BE0-BASE
+ASMPTR(Base, DrawNoFloorPatch, 0x76CDC)                         //00476CDC-BASE
 ASMPTR(Base, DrawFloor, 0xDED10)                                //004DED10-BASE
 
-ASMPTR(Base, DrawAutoMapInfo, 0x5ADE8)                         //0045ADE8-BASE
+// keyPressPatches
+ASMPTR(Base, keyPress, 0x6A847)                              //0046A847-base
+ASMPTR(Base, keyPress_II, 0x6A854)                           //0046A854-base
 
+ASMPTR(Base, DrawAutoMapInfo, 0x5ADE8)                          //0045ADE8-BASE
 ASMPTR(Base, DrawGameServerIpPatch, 0x5ADC7)                    //0045ADC7-BASE
 ASMPTR(Base, GameLoopPatch, 0x51C2A)                            //00451C2A-BASE
 ASMPTR(Base, oogLoopPatch, 0xFA663)                             //004FA663-BASE
