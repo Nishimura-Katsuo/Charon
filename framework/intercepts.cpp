@@ -21,6 +21,19 @@ void __declspec(naked) _chatInput() {
 			ret
 	}
 }
+void __fastcall keyPressEvent(WPARAM wparam, LPARAM lparam);
+void __declspec(naked) _keyPressIntercept() {
+	__asm {
+		
+		mov cl, [edi + 0x08] //(wparam)
+		mov dl, [edi + 0x0c] //(lparam)
+
+		call keyPressEvent
+		//ToDo; implement blocking a key
+	
+		jmp [D2::keyPress_II]
+	}
+}
 
 HMODULE __stdcall multi(LPSTR Class, LPSTR Window) {
     return 0;

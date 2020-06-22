@@ -22,6 +22,7 @@ void _gameLoop();
 void _oogLoop();
 void _drawFloor();
 void _drawAutoMapInfo(DWORD size);
+void _keyPressIntercept();
 int __stdcall printf_newline(const char* format, ...);
 namespace D2 {
     extern int ScreenWidth, ScreenHeight;

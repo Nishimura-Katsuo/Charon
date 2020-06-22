@@ -35,4 +35,11 @@ typedef std::unordered_map<std::wstring, InputCallback> InputCallbackMap;
 typedef InputCallbackMap::iterator InputMapIterator;
 typedef std::pair<std::wstring, InputCallback> InputCallbackPair;
 
+// A hotkey is like a command
+typedef std::function<BOOL(LPARAM lParam)> HotkeyCallback;
+typedef std::unordered_map<int, HotkeyCallback> HotkeyCallbackMap;
+typedef HotkeyCallbackMap::iterator HotkeyMapIterator;
+extern HotkeyCallbackMap HotkeyCallbacks;
+
+
 extern bool inGame;
