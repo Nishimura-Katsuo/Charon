@@ -33,7 +33,7 @@ int GameChatBuffer::sync() {
 
 GameChat::GameChat() : std::wostream(&buf) { }
 
-GameChat& GameChat::color(DWORD color) {
+GameChat& GameChat::operator()(DWORD color) {
     buf.color = color;
     return *this;
 }
