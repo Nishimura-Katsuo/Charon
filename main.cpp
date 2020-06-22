@@ -333,28 +333,28 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
                 debugMode = !debugMode;
                 MemoryPatch(D2::EnableDebugPrint) << debugMode; // Enable in-game debug prints
                 if (debugMode) {
-                    D2::wprintf(2, L"Debugging on.");
+                    game.color(2) << "Debugging on." << std::endl;
                 }
                 else {
-                    D2::wprintf(1, L"Debugging off.");
+                    game.color(1) << "Debugging off." << std::endl;
                 }
                 return FALSE;
             }
             else if (param == L"swatch") {
                 drawSwatch = !drawSwatch;
                 if (drawSwatch) {
-                    D2::wprintf(2, L"Swatch on.");
+                    game.color(2) << "Swatch on." << std::endl;
                 }
                 else {
-                    D2::wprintf(1, L"Swatch off.");
+                    game.color(1) << "Swatch off." << std::endl;
                 }
                 return FALSE;
             }
         }
 
-        D2::wprintf(3, L"Usage: %ls flag", cmd.c_str());
-        D2::wprintf(3, L"Example: %ls debug", cmd.c_str());
-        D2::wprintf(3, L"Available flags: debug, swatch");
+        game.color(3) << "Usage: " << cmd << " flag" << std::endl
+            << "Example: " << cmd << " debug" << std::endl
+            << "Available flags: debug, swatch" << std::endl;
 
         return FALSE;
     };
@@ -370,7 +370,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
         if (wchat) {
             wchat >> possible;
             if (!wchat) {
-                D2::wprintf(3, L"No data specified.");
+                game.color(3) << "No data specified." << std::endl;
                 goto usage;
             }
 
@@ -383,12 +383,12 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
                         data.push_back({ size, value });
                     }
                     else {
-                        D2::wprintf(3, L"Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!");
+                        game.color(3) << "Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!" << std::endl;
                         goto usage;
                     }
                 }
                 else {
-                    D2::wprintf(3, L"Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!");
+                    game.color(3) << "Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!" << std::endl;
                     goto usage;
                 }
                 wchat >> possible;
@@ -410,7 +410,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
                     patch << (long long)patchdata.value;
                     break;
                 default:
-                    D2::wprintf(3, L"Nishi, your code is stupid. Please write it correctly.");
+                    game.color(3) << "Nishi, your code is stupid. Please write it correctly." << std::endl;
                     return FALSE;
                 }
             }
@@ -420,18 +420,17 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
 
         usage:
 
-        D2::wprintf(3, L"Example: %ls 7BB3A4 00000001", cmd.c_str());
-        D2::wprintf(3, L"Usage: %ls address data [data ...]", cmd.c_str());
+        game.color(3) << "Example: " << cmd << " 7BB3A4 00000001" << std::endl
+            << "Usage: " << cmd << " address data [data ...]" << std::endl;
 
         return FALSE;
     };
 
-    D2::wprintf(0, L"Charon loaded. Available commands:");
-    D2::wprintf(3, L"");
+    game.color(3) << "Charon loaded. Available commands:" << std::endl << std::endl;
 
     for (const InputCallbackPair& kv : ChatInputCallbacks) {
-        D2::wprintf(3, L"  %ls", kv.first.c_str());
+        game.color(3) << "  " << kv.first << std::endl;
     }
 
-    D2::wprintf(3, L"");
+    game.color(3) << std::endl;
 }
