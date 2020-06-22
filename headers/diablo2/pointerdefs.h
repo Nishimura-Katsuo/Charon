@@ -44,8 +44,8 @@ FUNCPTR(D2CLIENT, LeftClickItem_I, void __stdcall,
 (D2::Types::UnitAny* pPlayer, D2::Types::Inventory* pInventory, int x, int y, DWORD dwClickType, D2::Types::InventoryLayout* pLayout, DWORD Location),
 0x8FFE0) // Updated 1.14d //0048FFE0-BASE
 
-FUNCPTR(D2CLIENT, PrintGameString, void __fastcall, (wchar_t* wMessage, int nColor), 0x9E3A0)  // Updated 1.14d //0049E3A0-BASE
-FUNCPTR(D2CLIENT, PrintPartyString, void __fastcall, (wchar_t* wMessage, int nColor), 0x9E5C0) // Updated 1.14d //0049E5C0-BASE
+FUNCPTR(D2CLIENT, PrintGameString, void __fastcall, (const wchar_t* wMessage, int nColor), 0x9E3A0)  // Updated 1.14d //0049E3A0-BASE
+FUNCPTR(D2CLIENT, PrintPartyString, void __fastcall, (const wchar_t* wMessage, int nColor), 0x9E5C0) // Updated 1.14d //0049E5C0-BASE
 
 FUNCPTR(D2CLIENT, LeaveParty, void __fastcall, (void), 0x79FC0) // Updated 1.14d //00479FC0-BASE
 
@@ -432,7 +432,7 @@ FUNCPTR(Base, DrawAutomap, void __fastcall, (), 0x5ad60)        // NEW 1.14d //0
 
 // For floor patching
 ASMPTR(Base, DrawNoFloorPatch, 0x76CDC)                         //00476BE0-BASE
-ASMPTR(Base, DrawFloor, 0xDED10)                                //004DED10-BASE
+FUNCPTR(Base, DrawFloor, void __fastcall, (void *unknown), 0xDED10)          //004DED10-BASE
 
 ASMPTR(Base, DrawAutoMapInfo, 0x5ADE8)                         //0045ADE8-BASE
 
