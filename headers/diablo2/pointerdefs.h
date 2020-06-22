@@ -384,7 +384,7 @@ FUNCPTR(D2WIN, LoadCellFile, D2::Types::CellFile* __fastcall, (const char* szFil
 
 FUNCPTR(D2WIN, TakeScreenshot, void __fastcall, (), 0xFA7A0)                                                               // Updated 1.14d //004FA7A0-BASE
 FUNCPTR(D2WIN, DrawGameText, void __fastcall, (const wchar_t* wStr, int xPos, int yPos, DWORD dwColor, BOOL bMultiLineCenterFlag), 0x102320) // Updated 1.14d //00502320-BASE
-FUNCPTR(D2WIN, GetTextSize, DWORD __fastcall, (wchar_t* wStr, DWORD* dwWidth, DWORD* dwFileNo), 0x102520)                 // Updated 1.14d //00502520-BASE
+FUNCPTR(D2WIN, GetTextSize, DWORD __fastcall, (const wchar_t* wStr, DWORD* dwWidth, DWORD* dwFileNo), 0x102520)                 // Updated 1.14d //00502520-BASE
 FUNCPTR(D2WIN, SetFont, DWORD __fastcall, (DWORD dwFileNo), 0x102EF0)                                                    // Updated 1.14d //00502EF0-BASE
 FUNCPTR(D2WIN, DestroyEditBox, DWORD __fastcall, (D2::Types::Control* box), 0xFDAA0)                                                 // Updated 1.14d //004FDAA0-BASE
 FUNCPTR(D2WIN, DestroyControl, VOID __stdcall, (D2::Types::Control* pControl), 0xf95c0)                                              // Updated 1.14d // 004f95c0-BASE

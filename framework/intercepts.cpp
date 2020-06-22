@@ -94,7 +94,9 @@ void _gameLoop() {
 void _oogLoop() {
 	oogLoop();
 }
+
 void gameDrawAutoMapInfo();
+
 void _drawAutoMapInfo(DWORD size) {
 	gameDrawAutoMapInfo();
 }

@@ -4,20 +4,28 @@
 
 #include "headers/common.h"
 
+std::wstring version = L"Charon v0.97";
+
 bool debugMode = true, drawSwatch = false, debugVerbose = false;
 wchar_t wHex[] = L"0123456789ABCDEF";
 const wchar_t* align[] = { L"Hostile", L"Neutral", L"Friendly" };
-InputCallbackMap ChatInputCallbacks;
 DWORD currentLevel, revealDelay = 0;
+
+InputCallbackMap ChatInputCallbacks;
+typedef std::function<std::wstring()> AutomapInfoCallback;
+std::vector<AutomapInfoCallback> AutomapInfoHooks;
+
+DWORD gametime = 0;
 
 using std::hex;
 
 void drawBranding(bool inGame) {
-    WCHAR msgtext[] = L"Charon v0.1";
     DWORD width = 0, height = 0, fileno = 1;
 
-    height = D2::GetTextSize(msgtext, &width, &fileno);
-    D2::DrawGameText(msgtext, D2::ScreenWidth - width - 5, D2::ScreenHeight - 5, inGame ? 0 : 4, 0);
+    if (!inGame) {
+        height = D2::GetTextSize(version.c_str(), &width, &fileno);
+        D2::DrawGameText(version.c_str(), D2::ScreenWidth - width - 5, D2::ScreenHeight - 5, inGame ? 0 : 4, 0);
+    }
 }
 
 void gameUnitPreDraw() {
@@ -252,6 +260,9 @@ void gamePostDraw() {
 }
 
 void gameLoop() {
+    if (!gametime) {
+        gametime = GetTickCount();
+    }
     D2::Types::UnitAny* me = D2::PlayerUnit[0];
 
     if (me && me->pPath && me->pPath->pRoom1 && me->pPath->pRoom1->pRoom2 && me->pPath->pRoom1->pRoom2->pLevel) {
@@ -270,19 +281,14 @@ void gameLoop() {
     // so idle time can be used to do more complex tasks.
 }
 
-std::vector<std::wstring(*)()> AutoMapInfoHooks = {};
 void gameDrawAutoMapInfo() {
-    std::wstring msg;
-    int i = 0;
-    for (auto func : AutoMapInfoHooks) {
-        auto msg = func();
-        wchar_t* tmpstr = _wcsdup(msg.c_str());
-
-        DWORD width = 0, height = 0, fileno = 1;
-        height = D2::GetTextSize(tmpstr, &width, &fileno);
-        D2::DrawGameText(tmpstr, D2::ScreenWidth - 16 - width, *D2::DrawAutoMapStatsOffsetY + (16 * i++), 4, 0);
-
-        free(tmpstr);
+    DWORD width = 0, height = 0, fileno = 1;
+    height = D2::GetTextSize(L"test", &width, &fileno);
+    DWORD bottom = *D2::DrawAutoMapStatsOffsetY - height;
+    for (AutomapInfoCallback func : AutomapInfoHooks) {
+        std::wstring msg = func();
+        bottom += D2::GetTextSize(msg.c_str(), &width, &fileno);
+        D2::DrawGameText(msg.c_str(), D2::ScreenWidth - 16 - width, bottom, 4, 0);
     }
 }
 
@@ -293,6 +299,7 @@ void oogPostDraw() {
 
 void oogLoop() {
     currentLevel = 0;
+    gametime = 0;
     // Out of game logic goes here.
 }
 
@@ -337,7 +344,6 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::ShakePatch) << ASM::RET; // Ignore shaking requests
     MemoryPatch(D2::DisableBattleNetPatch) << ASM::RET; // Prevent battle.net connections
     MemoryPatch(D2::DrawNoFloorPatch) << CALL(_drawFloor);
-
     MemoryPatch(D2::DrawAutoMapInfo) << CALL(_drawAutoMapInfo);
 
     *D2::NoPickUp = true;
@@ -444,9 +450,17 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
         return FALSE;
     };
 
-    AutoMapInfoHooks.push_back([]() -> std::wstring {
-        return std::wstring(L"Charon v0.1");
+    AutomapInfoHooks.push_back([]() -> std::wstring {
+        return version;
     });
+
+    AutomapInfoHooks.push_back([]() -> std::wstring {
+        DWORD elapsed = GetTickCount() - gametime, seconds = (elapsed / 1000) % 60, minutes = (elapsed / 60000) % 60;
+        wchar_t msg[16];
+        swprintf_s(msg, L"%d:%02d", minutes, seconds);
+        return msg;
+    });
+
     game.color(3) << "Charon loaded. Available commands:" << std::endl << std::endl;
 
     for (const InputCallbackPair& kv : ChatInputCallbacks) {
