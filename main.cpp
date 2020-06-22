@@ -324,7 +324,7 @@ struct DeferredPatch {
 
 HotkeyCallbackMap HotkeyCallbacks;
 
-void __fastcall keyPressEvent(WPARAM wparam, LPARAM lparam) {
+BOOL __fastcall keyPressEvent(WPARAM wparam, LPARAM lparam) {
 
     BOOL chatBox = inGame && D2::GetUiFlag(0x05);
     BOOL escMenu = inGame && D2::GetUiFlag(0x09);
@@ -339,10 +339,12 @@ void __fastcall keyPressEvent(WPARAM wparam, LPARAM lparam) {
         if (it != HotkeyCallbacks.end()) {
             HotkeyCallback cb = it->second;
             if (cb(lparam)) {
-                //ToDo; implement blocking a key
+                return true;
             }
         }
     }
+
+    return false;
 }
 
 void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
@@ -492,7 +494,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     HotkeyCallbacks[VK_F12] = [](LPARAM options) -> BOOL {
         std::cout << "pressed f12" << std::endl;
 
-        return true;
+        return false;
     };
 
     game(3) << "Charon loaded. Available commands:" << std::endl << std::endl;
