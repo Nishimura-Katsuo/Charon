@@ -1,7 +1,10 @@
+#define _USE_MATH_DEFINES
+
 #pragma once
 
 #include "D2Structs.h"
 #include <map>
+#include <cmath>
 
 extern DPOINT xvector, yvector;
 extern bool debugMode, drawSwatch;
@@ -43,7 +46,7 @@ class GameChat : public std::wostream {
     GameChatBuffer buf;
 public:
     GameChat();
-    GameChat& color(DWORD color);
+    GameChat& operator()(DWORD color);
 };
 
 extern GameChat game;

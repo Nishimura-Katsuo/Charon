@@ -2,7 +2,9 @@
  * Charon - For the finer life in Diablo 2.
  */
 
+#define _USE_MATH_DEFINES
 #include "headers/common.h"
+#include <cmath>
 
 std::wstring version = L"Charon v0.97";
 
@@ -162,7 +164,7 @@ void gameAutomapPostDraw() {
                         //@ToDo; figure out which dots are important and which aren't
                         // for now all we do is draw a green dot
                         if (ps->dwType == 5) {
-                            DrawAutomapRadialShape({ (double)room->dwPosX * 5 + ps->dwPosX, (double)room->dwPosY * 5 + ps->dwPosY }, 4, 9, 0x83);
+                            DrawAutomapRadialShape({ (double)room->dwPosX * 5 + ps->dwPosX, (double)room->dwPosY * 5 + ps->dwPosY }, 4, 8, 0x83, M_PI / 8);
                         }
                     }
                 }
@@ -357,26 +359,26 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
                 debugMode = !debugMode;
                 MemoryPatch(D2::EnableDebugPrint) << debugMode; // Enable in-game debug prints
                 if (debugMode) {
-                    game.color(2) << "Debugging on." << std::endl;
+                    game(2) << "Debugging on." << std::endl;
                 }
                 else {
-                    game.color(1) << "Debugging off." << std::endl;
+                    game(1) << "Debugging off." << std::endl;
                 }
                 return FALSE;
             }
             else if (param == L"swatch") {
                 drawSwatch = !drawSwatch;
                 if (drawSwatch) {
-                    game.color(2) << "Swatch on." << std::endl;
+                    game(2) << "Swatch on." << std::endl;
                 }
                 else {
-                    game.color(1) << "Swatch off." << std::endl;
+                    game(1) << "Swatch off." << std::endl;
                 }
                 return FALSE;
             }
         }
 
-        game.color(3) << "Usage: " << cmd << " flag" << std::endl
+        game(3) << "Usage: " << cmd << " flag" << std::endl
             << "Example: " << cmd << " debug" << std::endl
             << "Available flags: debug, swatch" << std::endl;
 
@@ -394,7 +396,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
         if (wchat) {
             wchat >> possible;
             if (!wchat) {
-                game.color(3) << "No data specified." << std::endl;
+                game(3) << "No data specified." << std::endl;
                 goto usage;
             }
 
@@ -407,12 +409,12 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
                         data.push_back({ size, value });
                     }
                     else {
-                        game.color(3) << "Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!" << std::endl;
+                        game(3) << "Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!" << std::endl;
                         goto usage;
                     }
                 }
                 else {
-                    game.color(3) << "Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!" << std::endl;
+                    game(3) << "Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!" << std::endl;
                     goto usage;
                 }
                 wchat >> possible;
@@ -434,7 +436,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
                     patch << (long long)patchdata.value;
                     break;
                 default:
-                    game.color(3) << "Nishi, your code is stupid. Please write it correctly." << std::endl;
+                    game(3) << "Nishi, your code is stupid. Please write it correctly." << std::endl;
                     return FALSE;
                 }
             }
@@ -444,7 +446,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
 
         usage:
 
-        game.color(3) << "Example: " << cmd << " 7BB3A4 00000001" << std::endl
+        game(3) << "Example: " << cmd << " 7BB3A4 00000001" << std::endl
             << "Usage: " << cmd << " address data [data ...]" << std::endl;
 
         return FALSE;
@@ -461,11 +463,11 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
         return msg;
     });
 
-    game.color(3) << "Charon loaded. Available commands:" << std::endl << std::endl;
+    game(3) << "Charon loaded. Available commands:" << std::endl << std::endl;
 
     for (const InputCallbackPair& kv : ChatInputCallbacks) {
-        game.color(3) << "  " << kv.first << std::endl;
+        game(3) << "  " << kv.first << std::endl;
     }
 
-    game.color(3) << std::endl;
+    game(3) << std::endl;
 }
