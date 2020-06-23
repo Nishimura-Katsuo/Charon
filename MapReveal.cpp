@@ -18,14 +18,23 @@ public:
     DWORD type;
 };
 
+struct RevealData {
+    bool isRevealed = false;
+    D2::Types::Room2* room2 = nullptr;
+};
+
 // This feature class registers itself.
 class : public Feature {
-    std::map<int, std::vector<FoundExit>> RevealedExits;
-    DWORD currentLevel = 0, revealDelay = 0;
+    DWORD currentLevel = 0;
+    int revealDelay = 0;
+
+    std::map<DWORD, RevealData> revealdata;
+    std::map<DWORD, std::vector<FoundExit>> RevealedExits;
 
 public:
     void init() {
         std::cout << "Installing map reveal..." << std::endl;
+        MemoryPatch(0x4DC000) << ASM::RET; // Disable fade effects from switching areas (so we can reveal sooner)
     }
 
     void gameLoop() {
@@ -35,11 +44,14 @@ public:
             DWORD levelno = me->pPath->pRoom1->pRoom2->pLevel->dwLevelNo;
             if (levelno != currentLevel) {
                 currentLevel = levelno;
-                revealDelay = 20;
+                revealDelay = 3;
             }
 
-            if (revealDelay-- == 1) {
+            if (revealDelay < 1) {
                 RevealCurrentLevel();
+            }
+            else {
+                revealDelay--;
             }
         }
     }
@@ -95,30 +107,32 @@ public:
         if (me) {
             D2::Types::Level* level = me->pPath->pRoom1->pRoom2->pLevel;
 
-            if (level) {
-                DWORD dwLevelNo = level->dwLevelNo;
-                size_t saveExits = RevealedExits[dwLevelNo].size() < 1;
+            if (level && level->dwLevelNo > 0) {
+                if (!revealdata[level->dwLevelNo].isRevealed) {
+                    revealdata[level->dwLevelNo].room2 = level->pRoom2First;
+                    revealdata[level->dwLevelNo].isRevealed = true;
+                }
 
-                for (D2::Types::Room2* room2 = level->pRoom2First; room2 != nullptr; room2 = room2->pRoom2Next) {
+                D2::Types::Room2* room2 = revealdata[level->dwLevelNo].room2;
+
+                for (int c = 0;  c < 20 && room2 != nullptr; c++) {
                     if (room2->pLevel && room2->pLevel->pMisc && room2->pLevel->pMisc->pAct) {
                         if (room2->pRoom1 == nullptr) {
                             D2::AddRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, NULL);
 
                             if (room2->pRoom1) {
                                 D2::RevealAutomapRoom(room2->pRoom1, TRUE, *D2::AutomapLayer);
-                                if (saveExits) {
-                                    CheckExits(room2);
-                                }
+                                CheckExits(room2);
                                 D2::RemoveRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, NULL);
                             }
                         }
                         else {
                             D2::RevealAutomapRoom(room2->pRoom1, TRUE, *D2::AutomapLayer);
-                            if (saveExits) {
-                                CheckExits(room2);
-                            }
+                            CheckExits(room2);
                         }
                     }
+
+                    room2 = revealdata[level->dwLevelNo].room2 = revealdata[level->dwLevelNo].room2->pRoom2Next;
                 }
             }
         }
