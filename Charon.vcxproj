@@ -170,7 +170,6 @@
     <ClCompile Include="MapUnits.cpp" />
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="PatchCommand.cpp" />
-    <ClCompile Include="Weather.cpp" />
     <ClCompile Include="Swatch.cpp" />
   </ItemGroup>
   <ItemGroup>
