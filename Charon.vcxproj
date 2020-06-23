@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-        <IncludePath>$(IncludePath)</IncludePath>
+    <IncludePath>$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -116,7 +116,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-     <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -154,32 +154,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-       <ClCompile Include="features/*.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="DebugMode.cpp" />
-    <ClCompile Include="Drawing.cpp" />
-    <ClCompile Include="framework\feature.cpp" />
-    <ClCompile Include="framework\hook.cpp" />
-    <ClCompile Include="framework\pointers.cpp" />
-    <ClCompile Include="framework\utilities.cpp" />
-    <ClCompile Include="framework\main.cpp" />
-    <ClCompile Include="GameLoop.cpp" />
-    <ClCompile Include="Input.cpp" />
-    <ClCompile Include="MapReveal.cpp" />
-    <ClCompile Include="MapUnits.cpp" />
-    <ClCompile Include="Misc.cpp" />
-    <ClCompile Include="PatchCommand.cpp" />
-    <ClCompile Include="Swatch.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="headers\common.h" />
-    <ClInclude Include="headers\D2Structs.h" />
-    <ClInclude Include="headers\pointerdefs.h" />
-    <ClInclude Include="headers\pointers.h" />
-    <ClInclude Include="headers\utilities.h" />
-    <ClInclude Include="headers\feature.h" />
-    <ClInclude Include="headers\hook.h" />
+    <ClCompile Include="features/*.cpp" />
+    <ClCompile Include="framework/*.cpp" />
+    <ClInclude Include="headers/*.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

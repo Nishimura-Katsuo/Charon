@@ -62,9 +62,6 @@
     <ClCompile Include="DebugMode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Swatch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MapUnits.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -80,7 +77,10 @@
     <ClCompile Include="GameLoop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Weather.cpp">
+    <ClCompile Include="features/*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="features/*.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
