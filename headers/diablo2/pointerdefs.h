@@ -426,7 +426,9 @@ FUNCPTR(D2GAME, exit0, DWORD __fastcall, (), 0x576F)            // NEW 1.14d //0
 VARPTR(Base, CurrentWaypointMenuTab, DWORD, 0x3BF086)           //007BF086-BASE
 VARPTR(Base, DrawFPS, BOOL, 0x3BB3A4)                           //007BB3A4-BASE
 VARPTR(Base, CurrentLevelId, WORD, 0x3A3140)                    //007A3140-BASE
-VARPTR(Base, DrawAutoMapStatsOffsetY, int, 0x3A51BC)           //007A51BC-BASE
+VARPTR(Base, DrawAutoMapStatsOffsetY, int, 0x3A51BC)            //007A51BC-BASE
+VARPTR(Base, GameStartedTick, int, 0x3A05F8)                    //007A05F8-BASE 
+
 
 FUNCPTR(Base, DrawAutomap, void __fastcall, (), 0x5ad60)        // NEW 1.14d //0045ad60-BASE
 
