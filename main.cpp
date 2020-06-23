@@ -367,6 +367,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     MemoryPatch(D2::DisableBattleNetPatch) << ASM::RET; // Prevent battle.net connections
     MemoryPatch(D2::DrawNoFloorPatch) << CALL(_drawFloor);
     MemoryPatch(D2::DrawAutoMapInfo) << CALL(_drawAutoMapInfo);
+    MemoryPatch(D2::SoundQuitDelayPatch) << BYTE(0x01); // Delay of 1 on cleaning up sounds after quiting game
 
     // Override the d2 internal function of pressing a key
     MemoryPatch(D2::keyPress) << JUMP(_keyPressIntercept) << ASM::NOP;
