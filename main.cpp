@@ -17,7 +17,6 @@ InputCallbackMap ChatInputCallbacks;
 typedef std::function<std::wstring()> AutomapInfoCallback;
 std::vector<AutomapInfoCallback> AutomapInfoHooks;
 
-DWORD gametime = 0;
 
 using std::hex;
 
@@ -262,9 +261,6 @@ void gamePostDraw() {
 }
 
 void gameLoop() {
-    if (!gametime) {
-        gametime = GetTickCount();
-    }
     D2::Types::UnitAny* me = D2::PlayerUnit[0];
 
     if (me && me->pPath && me->pPath->pRoom1 && me->pPath->pRoom1->pRoom2 && me->pPath->pRoom1->pRoom2->pLevel) {
@@ -301,7 +297,6 @@ void oogPostDraw() {
 
 void oogLoop() {
     currentLevel = 0;
-    gametime = 0;
     // Out of game logic goes here.
 }
 
@@ -485,7 +480,7 @@ void init(std::vector<LPWSTR> argv, DllMainArgs dllargs) {
     });
 
     AutomapInfoHooks.push_back([]() -> std::wstring {
-        DWORD elapsed = GetTickCount() - gametime, seconds = (elapsed / 1000) % 60, minutes = (elapsed / 60000) % 60;
+        DWORD elapsed = GetTickCount() - *D2::GameStartedTick, seconds = (elapsed / 1000) % 60, minutes = (elapsed / 60000) % 60;
         wchar_t msg[16];
         swprintf_s(msg, L"%d:%02d", minutes, seconds);
         return msg;
