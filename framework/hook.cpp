@@ -114,7 +114,7 @@ MemoryPatch& MemoryPatch::operator << (const CALL call) {
 }
 
 MemoryPatch& MemoryPatch::operator << (const JUMP jump) {
-    pAddr += PatchCall(ASM::JMP, pAddr, (DWORD)jump.pFunc);
+    pAddr += PatchCall(ASM::JUMP, pAddr, (DWORD)jump.pFunc);
     return *this;
 }
 

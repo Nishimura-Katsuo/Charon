@@ -151,22 +151,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="D2Structs.cpp" />
-    <ClCompile Include="framework\dllmain.cpp" />
+    <ClCompile Include="DebugMode.cpp" />
+    <ClCompile Include="Drawing.cpp" />
+    <ClCompile Include="framework\feature.cpp" />
     <ClCompile Include="framework\hook.cpp" />
-    <ClCompile Include="framework\intercepts.cpp" />
     <ClCompile Include="framework\pointers.cpp" />
     <ClCompile Include="framework\utilities.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="framework\main.cpp" />
+    <ClCompile Include="GameLoop.cpp" />
+    <ClCompile Include="Input.cpp" />
+    <ClCompile Include="MapReveal.cpp" />
+    <ClCompile Include="MapUnits.cpp" />
+    <ClCompile Include="Misc.cpp" />
+    <ClCompile Include="PatchCommand.cpp" />
+    <ClCompile Include="Swatch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\common.h" />
-    <ClInclude Include="headers\diablo2\D2Structs.h" />
-    <ClInclude Include="headers\diablo2\intercepts.h" />
-    <ClInclude Include="headers\diablo2\newpointers.h" />
-    <ClInclude Include="headers\diablo2\pointerdefs.h" />
-    <ClInclude Include="headers\diablo2\pointers.h" />
-    <ClInclude Include="headers\diablo2\utilities.h" />
+    <ClInclude Include="headers\D2Structs.h" />
+    <ClInclude Include="headers\pointerdefs.h" />
+    <ClInclude Include="headers\pointers.h" />
+    <ClInclude Include="headers\utilities.h" />
+    <ClInclude Include="headers\feature.h" />
     <ClInclude Include="headers\hook.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

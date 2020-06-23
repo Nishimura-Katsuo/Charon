@@ -4,6 +4,7 @@
 #pragma once
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+
 #include <windows.h>
 #include <vector>
 #include <iostream>
@@ -13,33 +14,26 @@
 #include <sstream>
 #include <iomanip>
 
-#include "../headers/diablo2/pointers.h"
-#include "../headers/hook.h"
-#include "../headers/diablo2/intercepts.h"
-#include "../headers/diablo2/utilities.h"
+const std::wstring version = L"Charon v0.97";
 
-struct DllMainArgs {
-    HMODULE hModule;
-    DWORD  ul_reason_for_call;
-    LPVOID lpReserved;
+class GameOutputBuffer : public std::wstringbuf
+{
+public:
+    DWORD color = 0;
+    virtual int sync();
 };
 
-// Apparently OOG is hard coded to 800x600? Sounds dumb.
+class GameOutput : public std::wostream {
+    GameOutputBuffer buf;
+public:
+    GameOutput();
+    GameOutput& operator()(DWORD color);
+};
+
+extern GameOutput gamelog;
+
+const DWORD DEFAULT_FONT = 1;
+
 namespace D2 {
-    const DWORD DEFAULT_SCREEN_WIDTH = 800, DEFAULT_SCREEN_HEIGHT = 600;
+    extern int ScreenWidth, ScreenHeight;
 }
-
-typedef std::wstringstream& InputStream;
-typedef std::function<BOOL(std::wstring, InputStream)> InputCallback;
-typedef std::unordered_map<std::wstring, InputCallback> InputCallbackMap;
-typedef InputCallbackMap::iterator InputMapIterator;
-typedef std::pair<std::wstring, InputCallback> InputCallbackPair;
-
-// A hotkey is like a command
-typedef std::function<BOOL(LPARAM lParam)> HotkeyCallback;
-typedef std::unordered_map<int, HotkeyCallback> HotkeyCallbackMap;
-typedef HotkeyCallbackMap::iterator HotkeyMapIterator;
-extern HotkeyCallbackMap HotkeyCallbacks;
-
-
-extern bool inGame;
