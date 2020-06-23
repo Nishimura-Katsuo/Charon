@@ -26,7 +26,8 @@ struct RevealData {
 // This feature class registers itself.
 class : public Feature {
     DWORD currentLevel = 0;
-    int revealDelay = 0;
+    DWORD revealStart = 0;
+    bool inGame = false;
 
     std::map<DWORD, RevealData> revealdata;
     std::map<DWORD, std::vector<FoundExit>> RevealedExits;
@@ -38,26 +39,28 @@ public:
     }
 
     void gameLoop() {
+        if (!inGame) {
+            revealdata.clear();
+            inGame = true;
+        }
         D2::Types::UnitAny* me = D2::PlayerUnit[0];
 
         if (me && me->pPath && me->pPath->pRoom1 && me->pPath->pRoom1->pRoom2 && me->pPath->pRoom1->pRoom2->pLevel) {
             DWORD levelno = me->pPath->pRoom1->pRoom2->pLevel->dwLevelNo;
             if (levelno != currentLevel) {
                 currentLevel = levelno;
-                revealDelay = 3;
+                revealStart = GetTickCount();
             }
 
-            if (revealDelay < 1) {
+            if (GetTickCount() - revealStart > 150) {
                 RevealCurrentLevel();
-            }
-            else {
-                revealDelay--;
             }
         }
     }
 
     void oogLoop() {
         currentLevel = 0;
+        inGame = false;
     }
 
     void gameAutomapPostDraw() {
@@ -115,7 +118,7 @@ public:
 
                 D2::Types::Room2* room2 = revealdata[level->dwLevelNo].room2;
 
-                for (int c = 0;  c < 20 && room2 != nullptr; c++) {
+                for (int c = 0;  c < 10 && room2 != nullptr; c++) {
                     if (room2->pLevel && room2->pLevel->pMisc && room2->pLevel->pMisc->pAct) {
                         if (room2->pRoom1 == nullptr) {
                             D2::AddRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, NULL);
