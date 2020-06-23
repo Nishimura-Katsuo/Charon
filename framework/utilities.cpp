@@ -1,17 +1,18 @@
 #define _USE_MATH_DEFINES
 
+#include "../headers/D2Structs.h"
 #include "../headers/common.h"
-#include "../headers/diablo2/utilities.h"
+#include "../headers/feature.h"
+#include "../headers/pointers.h"
+#include "../headers/utilities.h"
 #include <iostream>
 #include <cmath>
 
 DPOINT xvector = { 16.0, 8.0 }, yvector = { -16.0, 8.0 };
-std::map<int, std::vector<FoundExit>> RevealedExits;
+GameOutput gamelog;
 
-GameChat game;
-
-int GameChatBuffer::sync() {
-    if (!inGame) {
+int GameOutputBuffer::sync() {
+    if (!State["inGame"]) {
         std::wcout << this->str();
         this->str(L"");
     }
@@ -31,9 +32,9 @@ int GameChatBuffer::sync() {
     return 0;
 }
 
-GameChat::GameChat() : std::wostream(&buf) { }
+GameOutput::GameOutput() : std::wostream(&buf) { }
 
-GameChat& GameChat::operator()(DWORD color) {
+GameOutput& GameOutput::operator()(DWORD color) {
     buf.color = color;
     return *this;
 }
@@ -212,55 +213,14 @@ bool isEnemy(D2::Types::UnitAny* unit) {
     return unitHP(unit) > 0 && isHostile(unit) && isAttackable(unit);
 }
 
-void __fastcall CustomDebugPrint(DWORD unk, char* szMsg, DWORD color) {
-    std::cout << (LPVOID)unk << " " << szMsg;
-}
-
-void CheckExits(D2::Types::Room2* current) {
-    FoundExit exit;
-    int x1 = 0, y1 = 0;
-    int x2 = 0, y2 = 0;
- 
-    for (unsigned int c = 0; c < current->dwRoomsNear; c++) {
-        if (current->pLevel->dwLevelNo != current->pRoom2Near[c]->pLevel->dwLevelNo && (current->dwPosX == current->pRoom2Near[c]->dwPosX || current->dwPosY == current->pRoom2Near[c]->dwPosY)) {
-            exit.origin = { ((double)current->dwPosX + (double)current->dwSizeX / 2) * 5, ((double)current->dwPosY + (double)current->dwSizeY / 2) * 5 };
-            exit.target = { ((double)current->pRoom2Near[c]->dwPosX + (double)current->pRoom2Near[c]->dwSizeX / 2) * 5, ((double)current->pRoom2Near[c]->dwPosY + (double)current->pRoom2Near[c]->dwSizeY / 2) * 5 };
-            RevealedExits[current->pLevel->dwLevelNo].push_back(exit);
+namespace D2 {
+    namespace Types {
+        WORD CollMap::getCollision(DWORD localx, DWORD localy, WORD mask) {
+            return pMapStart[localx + localy * dwSizeGameX] & mask;
         }
-    }
-}
 
-void RevealCurrentLevel() {
-    D2::Types::UnitAny* me = D2::PlayerUnit[0];
-
-    if (me) {
-        D2::Types::Level* level = me->pPath->pRoom1->pRoom2->pLevel;
-
-        if (level) {
-            DWORD dwLevelNo = level->dwLevelNo;
-            size_t saveExits = RevealedExits[dwLevelNo].size() < 1;
-            
-            for (D2::Types::Room2* room2 = level->pRoom2First; room2 != nullptr; room2 = room2->pRoom2Next) {
-                if (room2->pLevel && room2->pLevel->pMisc && room2->pLevel->pMisc->pAct) {
-                    if (room2->pRoom1 == nullptr) {
-                        D2::AddRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, NULL);
-
-                        if (room2->pRoom1) {
-                            D2::RevealAutomapRoom(room2->pRoom1, TRUE, *D2::AutomapLayer);
-                            if (saveExits) {
-                                CheckExits(room2);
-                            }
-                            D2::RemoveRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, NULL);
-                        }
-                    }
-                    else {
-                        D2::RevealAutomapRoom(room2->pRoom1, TRUE, *D2::AutomapLayer);
-                        if (saveExits) {
-                            CheckExits(room2);
-                        }
-                    }
-                }
-            }
+        WORD Room1::getCollision(DWORD localx, DWORD localy, WORD mask) {
+            return Coll->pMapStart[localx + localy * Coll->dwSizeGameX] & mask;
         }
     }
 }
