@@ -1,3 +1,8 @@
+/**
+ * @description Make weather toggleable
+ * @Author Jaenster
+ */
+
 #include "headers/feature.h"
 #include "headers/common.h"
 #include "headers/pointers.h"
