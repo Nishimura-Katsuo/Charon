@@ -6,8 +6,12 @@
 #include <map>
 #include <cmath>
 
+class DPOINT {
+public:
+    double x, y;
+};
+
 extern DPOINT xvector, yvector;
-extern bool debugMode, drawSwatch;
 void DrawLine(POINT a, POINT b, DWORD dwColor);
 POINT WorldToScreen(DPOINT pos);
 POINT WorldToScreen(D2::Types::Path* path, DPOINT adjust = { 0, 0 });
@@ -31,22 +35,3 @@ bool isFriendly(D2::Types::UnitAny* unit);
 bool isHostile(D2::Types::UnitAny* unit);
 bool isAttackable(D2::Types::UnitAny* unit);
 bool isEnemy(D2::Types::UnitAny* unit);
-void __fastcall CustomDebugPrint(DWORD unk, char* szMsg, DWORD color);
-void RevealCurrentLevel();
-extern std::map<int, std::vector<FoundExit>> RevealedExits;
-
-class GameChatBuffer : public std::wstringbuf
-{
-public:
-    DWORD color = 0;
-    virtual int sync();
-};
-
-class GameChat : public std::wostream {
-    GameChatBuffer buf;
-public:
-    GameChat();
-    GameChat& operator()(DWORD color);
-};
-
-extern GameChat game;
