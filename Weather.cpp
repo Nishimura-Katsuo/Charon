@@ -6,7 +6,7 @@
 namespace Weather {
     bool bDrawWeather = true;
    
-    void (*DrawWeather)(void) = *(void (*)())0x473910;
+    void (*DrawWeather)() = *(void (*)())0x473910;
     
     void drawWeatherIntercept() {
         if (bDrawWeather) DrawWeather();
@@ -24,18 +24,6 @@ namespace Weather {
                 gamelog(2) << " draw weather: " << (bDrawWeather  ? "true" : "false") << std::endl;
                 return FALSE;
             };
-        }
-
-        void gameLoop() {
-
-        }
-
-        void oogLoop() {
-
-        }
-
-        void gameAutomapPostDraw() {
-
         }
 
         void toggleWeather() {
