@@ -455,5 +455,6 @@ ASMPTR(Base, PreDrawUnitsPatch, 0x76ce1)                        //00476ce1-BASE
 ASMPTR(Base, SomethingBeforeDrawUnits, 0x73c00)                 //00473c00-BASE
 ASMPTR(Base, DrawWorldEndPatch, 0x76d31)                        //00476d31-BASE
 ASMPTR(Base, ShakePatch, 0x76D40)                               //00476D40-BASE
+ASMPTR(Base, SoundQuitDelayPatch, 0x115FB1)                     //00515FB1-BASE
 
 FUNCPTR(Base, GetUnitName, wchar_t* __fastcall, (D2::Types::UnitAny *unit), 0x64a60)                             //00464a60-BASE
