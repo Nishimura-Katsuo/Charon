@@ -15,42 +15,30 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="headers\diablo2\D2Structs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="headers\hook.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="headers\diablo2\pointers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="headers\common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="headers\diablo2\pointerdefs.h">
+    <ClInclude Include="headers\feature.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="headers\diablo2\intercepts.h">
+    <ClInclude Include="headers\D2Structs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="headers\diablo2\utilities.h">
+    <ClInclude Include="headers\pointerdefs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="headers\diablo2\newpointers.h">
+    <ClInclude Include="headers\pointers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="framework\dllmain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="framework\hook.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="framework\intercepts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="framework\pointers.cpp">
@@ -59,7 +47,37 @@
     <ClCompile Include="framework\utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D2Structs.cpp">
+    <ClCompile Include="framework\feature.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="framework\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Misc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PatchCommand.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugMode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Swatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MapUnits.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MapReveal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Drawing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLoop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
