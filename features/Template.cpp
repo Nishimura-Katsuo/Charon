@@ -4,11 +4,12 @@
 #include "headers/hook.h"
 
 namespace Template {
- 
+
     class : public Feature {
     public:
         void init() {
-            //std::cout << "Installing template" << std::endl;
+            //gamelog(3) << "Installing template" << std::endl;
         }
     } feature;
+
 }
