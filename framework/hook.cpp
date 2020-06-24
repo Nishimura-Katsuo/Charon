@@ -1,7 +1,9 @@
 #include <windows.h>
 #include "../headers/hook.h"
 #include <iostream>
+#include <unordered_map>
 
+std::unordered_map<DWORD, BYTE> OriginalBytes;
 
 DWORD calcRelAddr(DWORD instructionAddress, DWORD targetAddress, DWORD instructionLength) {
     return targetAddress - instructionAddress - instructionLength;
@@ -12,6 +14,15 @@ DWORD SetData(DWORD pAddr, const T& value) {
     DWORD dwOld, dwSize = sizeof(T);
 
     if (VirtualProtect((LPVOID)pAddr, dwSize, PAGE_READWRITE, &dwOld)) {
+        for (DWORD i = 0; i < dwSize; i++) {
+            try {
+                OriginalBytes.at(pAddr + i);
+            }
+            catch (...) {
+                OriginalBytes[pAddr + i] = *(BYTE*)(pAddr + i);
+            }
+        }
+
         T* addr = (T*)pAddr;
         *addr = value;
         VirtualProtect((LPVOID)pAddr, dwSize, dwOld, &dwOld);
@@ -25,6 +36,15 @@ DWORD PatchCall(BYTE instruction, DWORD pAddr, DWORD pFunc) {
     DWORD dwOld, dwLen = sizeof(BYTE) + sizeof(DWORD);
 
     if (VirtualProtect((LPVOID)pAddr, dwLen, PAGE_READWRITE, &dwOld)) {
+        for (DWORD i = 0; i < dwLen; i++) {
+            try {
+                OriginalBytes.at(pAddr + i);
+            }
+            catch (...) {
+                OriginalBytes[pAddr + i] = *(BYTE*)(pAddr + i);
+            }
+        }
+
         BYTE* bytes = (BYTE*)pAddr;
         bytes[0] = instruction;
         *(DWORD*)(bytes + 1) = calcRelAddr(pAddr, pFunc, dwLen);
@@ -39,7 +59,32 @@ DWORD SetBytes(DWORD pAddr, BYTE value, DWORD dwLen) {
     DWORD dwOld;
 
     if (VirtualProtect((LPVOID)pAddr, dwLen, PAGE_READWRITE, &dwOld)) {
+        for (DWORD i = 0; i < dwLen; i++) {
+            try {
+                OriginalBytes.at(pAddr + i);
+            }
+            catch (...) {
+                OriginalBytes[pAddr + i] = *(BYTE*)(pAddr + i);
+            }
+        }
+
         std::memset((LPVOID)pAddr, value, dwLen);
+        VirtualProtect((LPVOID)pAddr, dwLen, dwOld, &dwOld);
+        return dwLen;
+    }
+
+    return FALSE;
+}
+
+DWORD RevertBytes(DWORD pAddr, DWORD dwLen) {
+    DWORD dwOld;
+
+    if (VirtualProtect((LPVOID)pAddr, dwLen, PAGE_READWRITE, &dwOld)) {
+        for (DWORD i = 0; i < dwLen; i++) {
+            try {
+                *(BYTE*)(pAddr + i) = OriginalBytes.at(pAddr + i);
+            } catch (...) { }
+        }
         VirtualProtect((LPVOID)pAddr, dwLen, dwOld, &dwOld);
         return dwLen;
     }
@@ -66,6 +111,10 @@ CALL::CALL(LPVOID pFunc) {
 
 JUMP::JUMP(LPVOID pFunc) {
     this->pFunc = pFunc;
+}
+
+REVERT::REVERT(size_t length) {
+    this->length = length;
 }
 
 template <class T>
@@ -118,10 +167,24 @@ MemoryPatch& MemoryPatch::operator << (const JUMP jump) {
     return *this;
 }
 
+MemoryPatch& MemoryPatch::operator << (const REVERT revert) {
+    pAddr += RevertBytes(pAddr, revert.length);
+    return *this;
+}
+
 MemoryPatch& MemoryPatch::operator << (BYTESEQ bytes) {
     DWORD dwOld, dwSize = bytes.size();
 
     if (VirtualProtect((LPVOID)pAddr, dwSize, PAGE_READWRITE, &dwOld)) {
+        for (DWORD i = 0; i < dwSize; i++) {
+            try {
+                OriginalBytes.at(pAddr + i);
+            }
+            catch (...) {
+                OriginalBytes[pAddr + i] = *(BYTE*)(pAddr + i);
+            }
+        }
+
         BYTE* addr = (BYTE*)pAddr;
         for (size_t c = 0; c < dwSize; c++) {
             addr[c] = bytes[c];

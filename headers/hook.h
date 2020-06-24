@@ -52,6 +52,13 @@ public:
     friend class MemoryPatch;
 };
 
+class REVERT {
+    size_t length;
+public:
+    REVERT(size_t length);
+    friend class MemoryPatch;
+};
+
 class MemoryPatch {
     DWORD pAddr = NULL;
 
@@ -78,5 +85,6 @@ public:
     MemoryPatch& operator << (const REWIND offset);
     MemoryPatch& operator << (const CALL call);
     MemoryPatch& operator << (const JUMP jump);
+    MemoryPatch& operator << (const REVERT revert);
     MemoryPatch& operator << (BYTESEQ bytes);
 };
