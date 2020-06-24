@@ -11,6 +11,13 @@
 #include <iostream>
 #include <cmath>
 
+REMOTEFUNC(DWORD __stdcall, GetAutomapSize, (void), 0x45A710)
+REMOTEFUNC(D2::Types::AutomapCell* __fastcall, NewAutomapCell, (), 0x457C30)
+REMOTEFUNC(void __fastcall, AddAutomapCell, (D2::Types::AutomapCell* aCell, D2::Types::AutomapCell** node), 0x457B00)
+REMOTEFUNC(void __stdcall, RevealAutomapRoom, (D2::Types::Room1* pRoom1, DWORD dwClipFlag, D2::Types::AutomapLayer* aLayer), 0x458F40)
+REMOTEFUNC(D2::Types::AutomapLayer* __fastcall, InitAutomapLayer_I, (DWORD nLayerNo), 0x458D40)
+REMOTEVAR(D2::Types::AutomapLayer*, AutomapLayer, 0x7A5164)
+
 class FoundExit {
 public:
     DPOINT origin;
@@ -68,19 +75,14 @@ public:
         if (player) {
             D2::Types::Level* level = player->pPath->pRoom1->pRoom2->pLevel;
             if (level) {
-                // Loop trough all rooms of current lvl
                 for (D2::Types::Room2* room = player->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room; room = room->pRoom2Next) {
                     if (room->pPreset) {
-                        // Loop trough presets of current lvl
                         for (D2::Types::PresetUnit* ps = room->pPreset; ps; ps = ps->pPresetNext) {
-                            //@ToDo; figure out which dots are important and which aren't
-                            // for now all we do is draw a green dot
                             if (ps->dwType == 5) {
                                 DrawAutomapRadialShape({ (double)room->dwPosX * 5 + ps->dwPosX, (double)room->dwPosY * 5 + ps->dwPosY }, 4, 8, 0x83, M_PI / 8);
                             }
                         }
                     }
-
                 }
 
                 for (FoundExit exit : RevealedExits[level->dwLevelNo]) {
@@ -121,16 +123,17 @@ public:
                 for (int c = 0;  c < 10 && room2 != nullptr; c++) {
                     if (room2->pLevel && room2->pLevel->pMisc && room2->pLevel->pMisc->pAct) {
                         if (room2->pRoom1 == nullptr) {
-                            D2::AddRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, NULL);
+                            D2::AddRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, room2->pRoom1);
 
-                            if (room2->pRoom1) {
-                                D2::RevealAutomapRoom(room2->pRoom1, TRUE, *D2::AutomapLayer);
+                            if (room2->pRoom1 != nullptr) {
+                                RevealAutomapRoom(room2->pRoom1, TRUE, AutomapLayer);
                                 CheckExits(room2);
-                                D2::RemoveRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, NULL);
+                                // Not sure that we need to unload the room again... we're going to need it again later.
+                                // D2::RemoveRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, room2->pRoom1);
                             }
                         }
                         else {
-                            D2::RevealAutomapRoom(room2->pRoom1, TRUE, *D2::AutomapLayer);
+                            RevealAutomapRoom(room2->pRoom1, TRUE, AutomapLayer);
                             CheckExits(room2);
                         }
                     }

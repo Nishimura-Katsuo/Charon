@@ -33,12 +33,6 @@ FUNCPTR(D2CLIENT, CloseNPCInteract, void __fastcall, (void), 0xB3F10) // Updated
 
 // GHIDRA is updated to here so far
 
-FUNCPTR(D2CLIENT, GetAutomapSize, DWORD __stdcall, (void), 0x5A710)                                                     // Updated 1.14d //0045A710-BASE
-FUNCPTR(D2CLIENT, NewAutomapCell, D2::Types::AutomapCell* __fastcall, (), 0x57C30)                                                 // Updated 1.14d //00457C30-BASE
-FUNCPTR(D2CLIENT, AddAutomapCell, void __fastcall, (D2::Types::AutomapCell* aCell, D2::Types::AutomapCell** node), 0x57B00)                  // Updated 1.14d //00457B00-BASE
-FUNCPTR(D2CLIENT, RevealAutomapRoom, void __stdcall, (D2::Types::Room1* pRoom1, DWORD dwClipFlag, D2::Types::AutomapLayer* aLayer), 0x58F40) // Updated 1.14d //00458F40-BASE
-FUNCPTR(D2CLIENT, InitAutomapLayer_I, D2::Types::AutomapLayer* __fastcall, (DWORD nLayerNo), 0x58D40)                              // Updated 1.14d //00458D40-BASE
-
 FUNCPTR(D2CLIENT, ClickMap, void __fastcall, (DWORD MouseFlag, DWORD x, DWORD y, DWORD Type), 0x62D00) // Updated 1.14d //00462D00-BASE
 FUNCPTR(D2CLIENT, LeftClickItem_I, void __stdcall,
 (D2::Types::UnitAny* pPlayer, D2::Types::Inventory* pInventory, int x, int y, DWORD dwClickType, D2::Types::InventoryLayout* pLayout, DWORD Location),
@@ -97,7 +91,6 @@ VARPTR(D2CLIENT, MouseOffsetX, int, 0x3A520C) // Updated 1.14d //007A520C-BASE
 
 VARPTR(D2CLIENT, AutomapOn, DWORD, 0x3A27E8)            // Updated 1.14d //007A27E8-BASE
 VARPTR(D2CLIENT, Offset, POINT, 0x3A5198)               // Updated 1.14d //007A5198-BASE
-VARPTR(D2CLIENT, AutomapLayer, D2::Types::AutomapLayer*, 0x3A5164) // Updated 1.14d //007A5164-BASE
 
 VARPTR(D2CLIENT, ShakeX, int, 0x3B9538) //007B9538-BASE
 VARPTR(D2CLIENT, ShakeY, int, 0x3B8D20) //007B8D20-BASE
@@ -432,7 +425,6 @@ VARPTR(Base, DrawFPS, BOOL, 0x3BB3A4)                           //007BB3A4-BASE
 VARPTR(Base, CurrentLevelId, WORD, 0x3A3140)                    //007A3140-BASE
 VARPTR(Base, DrawAutoMapStatsOffsetY, int, 0x3A51BC)            //007A51BC-BASE
 VARPTR(Base, GameStartedTick, int, 0x3A05F8)                    //007A05F8-BASE 
-
 
 FUNCPTR(Base, DrawAutomap, void __fastcall, (), 0x5ad60)        // NEW 1.14d //0045ad60-BASE
 
