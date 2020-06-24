@@ -16,7 +16,7 @@ DWORD SetData(DWORD pAddr, const T& value) {
     if (VirtualProtect((LPVOID)pAddr, dwSize, PAGE_READWRITE, &dwOld)) {
         for (DWORD i = 0; i < dwSize; i++) {
             try {
-                OriginalBytes.at(pAddr + i);
+                BYTE tmp = OriginalBytes.at(pAddr + i);
             }
             catch (...) {
                 OriginalBytes[pAddr + i] = *(BYTE*)(pAddr + i);
@@ -38,7 +38,7 @@ DWORD PatchCall(BYTE instruction, DWORD pAddr, DWORD pFunc) {
     if (VirtualProtect((LPVOID)pAddr, dwLen, PAGE_READWRITE, &dwOld)) {
         for (DWORD i = 0; i < dwLen; i++) {
             try {
-                OriginalBytes.at(pAddr + i);
+                BYTE tmp = OriginalBytes.at(pAddr + i);
             }
             catch (...) {
                 OriginalBytes[pAddr + i] = *(BYTE*)(pAddr + i);
@@ -61,7 +61,7 @@ DWORD SetBytes(DWORD pAddr, BYTE value, DWORD dwLen) {
     if (VirtualProtect((LPVOID)pAddr, dwLen, PAGE_READWRITE, &dwOld)) {
         for (DWORD i = 0; i < dwLen; i++) {
             try {
-                OriginalBytes.at(pAddr + i);
+                BYTE tmp = OriginalBytes.at(pAddr + i);
             }
             catch (...) {
                 OriginalBytes[pAddr + i] = *(BYTE*)(pAddr + i);
@@ -178,7 +178,7 @@ MemoryPatch& MemoryPatch::operator << (BYTESEQ bytes) {
     if (VirtualProtect((LPVOID)pAddr, dwSize, PAGE_READWRITE, &dwOld)) {
         for (DWORD i = 0; i < dwSize; i++) {
             try {
-                OriginalBytes.at(pAddr + i);
+                BYTE tmp = OriginalBytes.at(pAddr + i);
             }
             catch (...) {
                 OriginalBytes[pAddr + i] = *(BYTE*)(pAddr + i);
