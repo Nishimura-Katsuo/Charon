@@ -8,7 +8,7 @@
 #include "headers/pointers.h"
 #include "headers/hook.h"
 
-namespace LineOfSight {
+namespace Omnivision {
 	
     class : public Feature {
     public:
