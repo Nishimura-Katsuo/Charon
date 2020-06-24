@@ -19,7 +19,7 @@ struct DeferredPatch {
 class : public Feature {
 public:
     void init() {
-        std::cout << "Installing patch command..." << std::endl;
+        gamelog << COLOR(4) << "Installing patch command..." << std::endl;
 
         ChatInputCallbacks[L"/patch"] = [](std::wstring cmd, InputStream wchat) -> BOOL {
             DWORD address;
@@ -32,7 +32,7 @@ public:
             if (wchat) {
                 wchat >> possible;
                 if (!wchat) {
-                    gamelog(3) << "No data specified." << std::endl;
+                    gamelog << COLOR(3) << "No data specified." << std::endl;
                     goto usage;
                 }
 
@@ -45,12 +45,12 @@ public:
                             data.push_back({ size, value });
                         }
                         else {
-                            gamelog(3) << "Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!" << std::endl;
+                            gamelog << COLOR(3) << "Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!" << std::endl;
                             goto usage;
                         }
                     }
                     else {
-                        gamelog(3) << "Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!" << std::endl;
+                        gamelog << COLOR(3) << "Data must be hex formatted and byte aligned (2, 4, 8, 16 long)!" << std::endl;
                         goto usage;
                     }
                     wchat >> possible;
@@ -72,7 +72,7 @@ public:
                         patch << (long long)patchdata.value;
                         break;
                     default:
-                        gamelog(3) << "Nishi, your code is stupid. Please write it correctly." << std::endl;
+                        gamelog << COLOR(1) << "Nishi, your code is stupid. Please write it correctly." << std::endl;
                         return FALSE;
                     }
                 }
@@ -82,7 +82,7 @@ public:
 
         usage:
 
-            gamelog(3) << "Example: " << cmd << " 7BB3A4 00000001" << std::endl
+            gamelog << COLOR(3) << "Example: " << cmd << " 7BB3A4 00000001" << std::endl
                 << "Usage: " << cmd << " address data [data ...]" << std::endl;
 
             return FALSE;

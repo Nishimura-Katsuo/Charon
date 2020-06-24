@@ -14,25 +14,20 @@
 #include <sstream>
 #include <iomanip>
 
-const std::wstring version = L"Charon v0.97";
-
-class GameOutputBuffer : public std::wstringbuf
-{
-public:
-    DWORD color = 0;
-    virtual int sync();
-};
-
 class GameOutput : public std::wostream {
-    GameOutputBuffer buf;
+    class GameOutputBuffer : public std::wstringbuf {
+    public:
+        virtual int sync();
+    } buf;
 public:
     GameOutput();
-    GameOutput& operator()(DWORD color);
 };
 
-extern GameOutput gamelog;
+std::wstring COLOR(BYTE color);
 
 const DWORD DEFAULT_FONT = 1;
+const std::wstring version = L"Charon v0.97";
+extern GameOutput gamelog;
 
 namespace D2 {
     extern int ScreenWidth, ScreenHeight;

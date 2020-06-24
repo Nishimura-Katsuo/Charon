@@ -9,35 +9,6 @@
 #include <cmath>
 
 DPOINT xvector = { 16.0, 8.0 }, yvector = { -16.0, 8.0 };
-GameOutput gamelog;
-
-int GameOutputBuffer::sync() {
-    if (!State["inGame"]) {
-        std::wcout << this->str();
-        this->str(L"");
-    }
-    else {
-        std::wstring::size_type start = 0;
-        std::wstring::size_type pos = this->str().find(L"\n");
-        while (pos != std::wstring::npos) {
-            std::wstring tmp = this->str().substr(start, pos - start);
-            D2::PrintGameString(tmp.c_str(), color);
-            start = pos + 1;
-            pos = this->str().find(L"\n", start);
-        }
-        if (start > 0) {
-            this->str(this->str().substr(start));
-        }
-    }
-    return 0;
-}
-
-GameOutput::GameOutput() : std::wostream(&buf) { }
-
-GameOutput& GameOutput::operator()(DWORD color) {
-    buf.color = color;
-    return *this;
-}
 
 void DrawLine(POINT a, POINT b, DWORD dwColor) {
     if (

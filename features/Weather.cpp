@@ -20,13 +20,13 @@ namespace Weather {
     class : public Feature {
     public:
         void init() {
-            std::cout << "Installing weather patch" << std::endl;
+            gamelog << COLOR(4) << "Installing weather patch..." << std::endl;
 
             MemoryPatch(0x476D23) << CALL(drawWeatherIntercept);
 
             HotkeyCallbacks[VK_INSERT] = [&](LPARAM options) -> BOOL {
                 toggleWeather();
-                gamelog(2) << " draw weather: " << (bDrawWeather  ? "true" : "false") << std::endl;
+                gamelog << COLOR(2) << "Draw weather " << (bDrawWeather  ? "true" : "false") << std::endl;
                 return FALSE;
             };
         }

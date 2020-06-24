@@ -8,7 +8,7 @@ namespace Template {
     class : public Feature {
     public:
         void init() {
-            //gamelog(3) << "Installing template" << std::endl;
+            //gamelog << COLOR(4) << "Installing template" << std::endl;
         }
     } feature;
 

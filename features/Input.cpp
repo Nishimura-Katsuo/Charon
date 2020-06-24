@@ -43,7 +43,7 @@ BOOL __fastcall keyPressEvent(WPARAM wparam, LPARAM lparam) {
     BOOL chatBox = State["inGame"] && D2::GetUiFlag(0x05);
     BOOL escMenu = State["inGame"] && D2::GetUiFlag(0x09);
 
-    //std::cout << "chatbox: " << chatBox << "\t" << "escMenu: " << escMenu << "\t" << wparam <<"\t" << lparam << std::endl;
+    //gamelog << COLOR(4) << "chatbox: " << chatBox << "\t" << "escMenu: " << escMenu << "\t" << wparam <<"\t" << lparam << std::endl;
 
     if (!chatBox && !escMenu) {
 

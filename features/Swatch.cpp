@@ -17,15 +17,15 @@ public:
         State["drawSwatch"] = !State["drawSwatch"];
 
         if (State["drawSwatch"]) {
-            gamelog(2) << "Swatch on." << std::endl;
+            gamelog << COLOR(2) << "Swatch on." << std::endl;
         }
         else {
-            gamelog(1) << "Swatch off." << std::endl;
+            gamelog << COLOR(1) << "Swatch off." << std::endl;
         }
     }
 
     void init() {
-        std::cout << "Installing color swatch..." << std::endl;
+        gamelog << COLOR(4) << "Installing color swatch..." << std::endl;
         ChatInputCallbacks[L"/swatch"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
             toggleSwatch();
             return FALSE;

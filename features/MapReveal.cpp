@@ -34,7 +34,7 @@ class : public Feature {
 
 public:
     void init() {
-        std::cout << "Installing map reveal..." << std::endl;
+        gamelog << COLOR(4) << "Installing map reveal..." << std::endl;
         MemoryPatch(0x4DC000) << ASM::RET; // Disable fade effects from switching areas (so we can reveal sooner)
     }
 

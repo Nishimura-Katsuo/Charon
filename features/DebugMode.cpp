@@ -40,15 +40,15 @@ public:
 
         MemoryPatch(D2::EnableDebugPrint) << (bool)State["debugMode"]; // Enable in-game debug prints
         if (State["debugMode"]) {
-            gamelog(2) << "Debugging on." << std::endl;
+            gamelog << COLOR(2) << "Debugging on." << std::endl;
         }
         else {
-            gamelog(1) << "Debugging off." << std::endl;
+            gamelog << COLOR(1) << "Debugging off." << std::endl;
         }
     }
 
     void init() {
-        std::cout << "Installing debug mode..." << std::endl;
+        gamelog << COLOR(4) << "Installing debug mode..." << std::endl;
 
         State["debugMode"] = true;
 

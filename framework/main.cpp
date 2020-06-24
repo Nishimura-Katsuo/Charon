@@ -18,7 +18,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
             f->init();
         }
 
-        gamelog(3) << "Charon loaded." << std::endl;
+        gamelog << COLOR(2) << "Charon loaded." << std::endl;
         break;
     case DLL_PROCESS_DETACH:
         for (Feature* f = Features; f; f = f->next) {

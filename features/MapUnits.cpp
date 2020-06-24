@@ -14,7 +14,7 @@ DWORD ItemRarityColor[32] = { 255, 29, 30, 32, 151, 132, 111, 155, 111 };
 class : public Feature {
 public:
     void init() {
-        std::cout << "Installing unit tracker..." << std::endl;
+        gamelog << COLOR(4) << "Installing unit tracker..." << std::endl;
     }
 
     void gameUnitPreDraw() {

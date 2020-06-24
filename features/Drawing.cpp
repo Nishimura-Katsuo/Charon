@@ -46,6 +46,7 @@ void gameAutomapDraw() {
 
 void oogDraw() {
     State["inGame"] = false;
+    D2::DrawSprites();
     D2::GetScreenModeSize(D2::GetScreenMode(), &D2::ScreenWidth, &D2::ScreenHeight);
     DWORD old = D2::SetFont(DEFAULT_FONT);
     for (Feature* f = Features; f; f = f->next) {
@@ -53,7 +54,6 @@ void oogDraw() {
     }
     D2::SetFont(old);
     // Since we patch to override DrawSprites, we need to call it ourselves.
-    D2::DrawSprites();
 }
 
 void gameDraw() {
