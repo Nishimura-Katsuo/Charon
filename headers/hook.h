@@ -109,6 +109,7 @@ namespace ASM {
     const BYTE PUSHAD = 0x60;
     const BYTE POPAD = 0x61;
     const BYTE PUSH_EDI = 0x57;
+    const BYTESEQ TEST_AL{ 0x84, 0xC0 };
     const BYTESEQ TEST_EAX{ 0x85, 0xC0 };
     const BYTESEQ MOV_ECX_EDI{ 0x89, 0xF9 };
 }

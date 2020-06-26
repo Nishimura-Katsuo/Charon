@@ -59,7 +59,7 @@ void __declspec(naked) _keyPressIntercept() {
 REMOTEFUNC(void, SoundChaosDebug, (), 0x4BABC0);
 
 // Replaces the 'soundchaosdebug' command
-BOOL __fastcall ChatCommandProcessor(char* msg) {
+bool __fastcall ChatCommandProcessor(char* msg) {
     std::string tmp(msg);
     std::wstring wMsg(tmp.begin(), tmp.end());
     try {
@@ -78,7 +78,7 @@ class : public Feature {
 public:
     void init() {
         // 28 - 15 = 13
-        MemoryPatch(0x47c53d) << ASM::MOV_ECX_EDI << CALL(ChatCommandProcessor) << ASM::TEST_EAX << JUMP_ZERO((LPVOID)0x47ca4f) << BYTES(ASM::NOP, 13);
+        MemoryPatch(0x47c53d) << ASM::MOV_ECX_EDI << CALL(ChatCommandProcessor) << ASM::TEST_AL << JUMP_ZERO((LPVOID)0x47ca4f) << BYTES(ASM::NOP, 13);
 
         // Override the d2 internal function of pressing a key
         MemoryPatch(keyPress) << JUMP(_keyPressIntercept) << ASM::NOP;
