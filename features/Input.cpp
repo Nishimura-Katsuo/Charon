@@ -9,40 +9,9 @@
 #include "headers/remote.h"
 #include <iostream>
 
-REMOTEFUNC(void __fastcall, ChatInput, (wchar_t* wMsg), 0x4787B0)
-
 ASMPTR keyPress = 0x46A847;
 ASMPTR keyPress_II = 0x46A854;
 ASMPTR keyPress_III = 0x46A93B;
-
-BOOL __fastcall chatInput(wchar_t* wMsg) {
-    try {
-        std::wstringstream msg(wMsg);
-        std::wstring cmd;
-        msg >> cmd;
-        return ChatInputCallbacks.at(cmd)(cmd, msg); // Find the callback, and then call it.
-    }
-    catch (...) {
-        return TRUE; // Ignore the exception. Command not found.
-    }
-}
-
-void __declspec(naked) _chatInput() {
-    __asm {
-        pushad
-        mov ecx, ebx
-        call chatInput
-        cmp eax, 0
-        popad
-        je BlockIt
-        call ChatInput
-        ret
-
-        BlockIt :
-        xor eax, eax
-            ret
-    }
-}
 
 BOOL __fastcall keyPressEvent(WPARAM wparam, LPARAM lparam) {
 
@@ -87,13 +56,37 @@ void __declspec(naked) _keyPressIntercept() {
     }
 }
 
+REMOTEFUNC(void, SoundChaosDebug, (), 0x4BABC0);
+
+// Replaces the 'soundchaosdebug' command
+BOOL __fastcall ChatCommandProcessor(char* msg) {
+    std::string tmp(msg);
+    std::wstring wMsg(tmp.begin(), tmp.end());
+    try {
+        std::wstringstream msg(wMsg);
+        std::wstring cmd;
+        msg >> cmd;
+        return ChatInputCallbacks.at(cmd)(cmd, msg); // Find the callback, and then call it.
+    }
+    catch (...) {
+        return TRUE; // Ignore the exception. Command not found.
+    }
+}
+
 // This feature class registers itself.
 class : public Feature {
 public:
     void init() {
-        MemoryPatch(0x47C89D) << CALL(_chatInput); // Intercept game input
+        // 28 - 15 = 13
+        MemoryPatch(0x47c53d) << ASM::MOV_ECX_EDI << CALL(ChatCommandProcessor) << ASM::TEST_EAX << JUMP_ZERO((LPVOID)0x47ca4f) << BYTES(ASM::NOP, 13);
 
         // Override the d2 internal function of pressing a key
         MemoryPatch(keyPress) << JUMP(_keyPressIntercept) << ASM::NOP;
+
+        // Since we patched this out, we should probably re-implement it
+        ChatInputCallbacks[L"soundchaosdebug"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
+            SoundChaosDebug();
+            return FALSE;
+        };
     }
 } feature;

@@ -55,6 +55,30 @@ DWORD PatchCall(BYTE instruction, DWORD pAddr, DWORD pFunc) {
     return FALSE;
 }
 
+DWORD PatchCallW(const BYTE instruction[2], DWORD pAddr, DWORD pFunc) {
+    DWORD dwOld, dwLen = sizeof(BYTE) * 2 + sizeof(DWORD);
+
+    if (VirtualProtect((LPVOID)pAddr, dwLen, PAGE_READWRITE, &dwOld)) {
+        for (DWORD i = 0; i < dwLen; i++) {
+            try {
+                BYTE tmp = OriginalBytes.at(pAddr + i);
+            }
+            catch (...) {
+                OriginalBytes[pAddr + i] = *(BYTE*)(pAddr + i);
+            }
+        }
+
+        BYTE* bytes = (BYTE*)pAddr;
+        bytes[0] = instruction[0];
+        bytes[1] = instruction[1];
+        *(DWORD*)(bytes + 2) = calcRelAddr(pAddr, pFunc, dwLen);
+        VirtualProtect((LPVOID)pAddr, dwLen, dwOld, &dwOld);
+        return dwLen;
+    }
+
+    return FALSE;
+}
+
 DWORD SetBytes(DWORD pAddr, BYTE value, DWORD dwLen) {
     DWORD dwOld;
 
@@ -113,6 +137,14 @@ JUMP::JUMP(LPVOID pFunc) {
     this->pFunc = pFunc;
 }
 
+JUMP_EQUAL::JUMP_EQUAL(LPVOID pFunc) {
+    this->pFunc = pFunc;
+}
+
+JUMP_NOT_EQUAL::JUMP_NOT_EQUAL(LPVOID pFunc) {
+    this->pFunc = pFunc;
+}
+
 REVERT::REVERT(size_t length) {
     this->length = length;
 }
@@ -164,6 +196,18 @@ MemoryPatch& MemoryPatch::operator << (const CALL call) {
 
 MemoryPatch& MemoryPatch::operator << (const JUMP jump) {
     pAddr += PatchCall(ASM::JUMP, pAddr, (DWORD)jump.pFunc);
+    return *this;
+}
+
+MemoryPatch& MemoryPatch::operator << (const JUMP_EQUAL jump) {
+    BYTE ins[]{ 0x0F, 0x84 };
+    pAddr += PatchCallW(ins, pAddr, (DWORD)jump.pFunc);
+    return *this;
+}
+
+MemoryPatch& MemoryPatch::operator << (const JUMP_NOT_EQUAL jump) {
+    BYTE ins[]{ 0x0F, 0x85 };
+    pAddr += PatchCallW(ins, pAddr, (DWORD)jump.pFunc);
     return *this;
 }
 

@@ -45,6 +45,23 @@ public:
     friend class MemoryPatch;
 };
 
+class JUMP_EQUAL {
+    LPVOID pFunc;
+public:
+    JUMP_EQUAL(LPVOID pFunc);
+    friend class MemoryPatch;
+};
+
+class JUMP_NOT_EQUAL {
+    LPVOID pFunc;
+public:
+    JUMP_NOT_EQUAL(LPVOID pFunc);
+    friend class MemoryPatch;
+};
+
+typedef JUMP_EQUAL JUMP_ZERO;
+typedef JUMP_NOT_EQUAL JUMP_NOT_ZERO;
+
 class REVERT {
     size_t length;
 public:
@@ -78,6 +95,8 @@ public:
     MemoryPatch& operator << (const REWIND offset);
     MemoryPatch& operator << (const CALL call);
     MemoryPatch& operator << (const JUMP jump);
+    MemoryPatch& operator << (const JUMP_EQUAL jump);
+    MemoryPatch& operator << (const JUMP_NOT_EQUAL jump);
     MemoryPatch& operator << (const REVERT revert);
     MemoryPatch& operator << (BYTESEQ bytes);
 };
@@ -89,4 +108,7 @@ namespace ASM {
     const BYTE RET = 0xC3;
     const BYTE PUSHAD = 0x60;
     const BYTE POPAD = 0x61;
+    const BYTE PUSH_EDI = 0x57;
+    const BYTESEQ TEST_EAX{ 0x85, 0xC0 };
+    const BYTESEQ MOV_ECX_EDI{ 0x89, 0xF9 };
 }
