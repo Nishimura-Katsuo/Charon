@@ -15,6 +15,14 @@ public:
     friend class MemoryPatch;
 };
 
+class NOP_TO {
+    DWORD addr;
+public:
+    NOP_TO(LPVOID addr);
+    NOP_TO(DWORD addr);
+    friend class MemoryPatch;
+};
+
 typedef std::vector<BYTE> BYTESEQ;
 
 class SKIP {
@@ -42,6 +50,7 @@ class JUMP {
     LPVOID pFunc;
 public:
     JUMP(LPVOID pFunc);
+    JUMP(DWORD pFunc);
     friend class MemoryPatch;
 };
 
@@ -49,6 +58,7 @@ class JUMP_EQUAL {
     LPVOID pFunc;
 public:
     JUMP_EQUAL(LPVOID pFunc);
+    JUMP_EQUAL(DWORD pFunc);
     friend class MemoryPatch;
 };
 
@@ -56,6 +66,7 @@ class JUMP_NOT_EQUAL {
     LPVOID pFunc;
 public:
     JUMP_NOT_EQUAL(LPVOID pFunc);
+    JUMP_NOT_EQUAL(DWORD pFunc);
     friend class MemoryPatch;
 };
 
@@ -91,6 +102,7 @@ public:
     MemoryPatch& operator << (const float data);
     MemoryPatch& operator << (const double data);
     MemoryPatch& operator << (const BYTES bytes);
+    MemoryPatch& operator << (const NOP_TO address);
     MemoryPatch& operator << (const SKIP offset);
     MemoryPatch& operator << (const REWIND offset);
     MemoryPatch& operator << (const CALL call);

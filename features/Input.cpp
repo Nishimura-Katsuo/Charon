@@ -9,9 +9,13 @@
 #include "headers/remote.h"
 #include <iostream>
 
-ASMPTR keyPress = 0x46A847;
-ASMPTR keyPress_II = 0x46A854;
-ASMPTR keyPress_III = 0x46A93B;
+const ASMPTR keyPressHookStart = 0x46A847;
+const ASMPTR keyPressHookEnd = 0x46A854;
+const ASMPTR keyPress_II = 0x46A854;
+const ASMPTR keyPress_III = 0x46A93B;
+const ASMPTR SoundChaosCheckStart = 0x47c53d;
+const ASMPTR SoundChaosCheckEnd = 0x47c559;
+const DWORD SuccessfulCommandAddress = 0x47ca4f;
 
 BOOL __fastcall keyPressEvent(WPARAM wparam, LPARAM lparam) {
 
@@ -77,11 +81,16 @@ bool __fastcall ChatCommandProcessor(char* msg) {
 class : public Feature {
 public:
     void init() {
-        // 28 - 15 = 13
-        MemoryPatch(0x47c53d) << ASM::MOV_ECX_EDI << CALL(ChatCommandProcessor) << ASM::TEST_AL << JUMP_ZERO((LPVOID)0x47ca4f) << BYTES(ASM::NOP, 13);
+        MemoryPatch(SoundChaosCheckStart)
+            << ASM::MOV_ECX_EDI
+            << CALL(ChatCommandProcessor)
+            << ASM::TEST_AL
+            << JUMP_ZERO(SuccessfulCommandAddress)
+            << NOP_TO(SoundChaosCheckEnd);
 
-        // Override the d2 internal function of pressing a key
-        MemoryPatch(keyPress) << JUMP(_keyPressIntercept) << ASM::NOP;
+        MemoryPatch(keyPressHookStart)
+            << JUMP(_keyPressIntercept)
+            << NOP_TO(keyPressHookEnd);
 
         // Since we patched this out, we should probably re-implement it
         ChatInputCallbacks[L"soundchaosdebug"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
