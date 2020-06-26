@@ -11,9 +11,9 @@
 
 REMOTEFUNC(void __fastcall, ChatInput, (wchar_t* wMsg), 0x4787B0)
 
-DWORD keyPress = 0x46A847;
-DWORD keyPress_II = 0x46A854;
-DWORD keyPress_III = 0x46A93B;
+ASMPTR keyPress = 0x46A847;
+ASMPTR keyPress_II = 0x46A854;
+ASMPTR keyPress_III = 0x46A93B;
 
 BOOL __fastcall chatInput(wchar_t* wMsg) {
     try {
