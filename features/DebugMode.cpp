@@ -6,14 +6,17 @@
 #include "headers/common.h"
 #include "headers/feature.h"
 #include "headers/hook.h"
-#include "headers/pointers.h"
+#include "headers/remote.h"
 #include <iostream>
 
 const wchar_t* align[] = { L"Hostile", L"Neutral", L"Friendly" };
 
+ASMPTR EnableDebugPrint = 0x8846DC;
+REMOTEFUNC(void __fastcall, DrawFloor, (void* unknown), 0x4DED10);
+
 void __fastcall _drawFloor(void* unknown) {
     if (!State["debugMode"]) {
-        D2::DrawFloor(unknown);
+        DrawFloor(unknown);
     }
 }
 
@@ -38,7 +41,7 @@ public:
     void toggleDebug() {
         State["debugMode"] = !State["debugMode"];
 
-        MemoryPatch(D2::EnableDebugPrint) << (bool)State["debugMode"]; // Enable in-game debug prints
+        MemoryPatch(EnableDebugPrint) << (bool)State["debugMode"]; // Enable in-game debug prints
         if (State["debugMode"]) {
             gamelog << COLOR(2) << "Debugging on." << std::endl;
         }
@@ -50,7 +53,7 @@ public:
     void init() {
         gamelog << COLOR(4) << "Installing debug mode..." << std::endl;
 
-        State["debugMode"] = true;
+        State["debugMode"] = false;
 
         MemoryPatch(0x476CDC) << CALL(_drawFloor); // Allow disabling the floor.
         MemoryPatch(0x51A480) << JUMP(printf_newline); // Enable even more console debug prints
@@ -70,7 +73,7 @@ public:
         BYTE d;
         // Server side tracks enemies
         if (State["debugMode"]) {
-            D2::Types::Room1* current = D2::PlayerUnit[0]->pPath->pRoom1;
+            D2::Types::Room1* current = D2::PlayerUnit->pPath->pRoom1;
             D2::Types::CollMap* coll = current->Coll;
             WORD* p = coll->pMapStart;
             DWORD color, x, y;

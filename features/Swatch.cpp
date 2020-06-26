@@ -5,7 +5,7 @@
 #include "headers/feature.h"
 #include "headers/hook.h"
 #include "headers/common.h"
-#include "headers/pointers.h"
+#include "headers/remote.h"
 #include <iostream>
 
 wchar_t wHex[] = L"0123456789ABCDEF";
@@ -46,7 +46,7 @@ public:
             for (int x = 0; x < 32; x++) {
                 for (int y = 0; y < 8; y++) {
                     color = (x << 3) | y;
-                    D2::DrawRectangle(x * gridsize, y * gridsize, x * gridsize + gridsize, y * gridsize + gridsize, color, 0xFF);
+                    DrawRectangle({ x * gridsize, y * gridsize }, { x * gridsize + gridsize, y * gridsize + gridsize }, color);
                     msg[0] = wHex[color >> 4];
                     msg[1] = wHex[color & 15];
                     height = D2::GetTextSize(msg, &width, &fontnum);

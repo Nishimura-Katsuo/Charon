@@ -6,13 +6,12 @@
 
 #include "headers/feature.h"
 #include "headers/common.h"
-#include "headers/pointers.h"
 #include "headers/hook.h"
+#include "headers/remote.h"
 #include <iostream>
 
-namespace D2 {
-    int ScreenWidth = 0, ScreenHeight = 0;
-}
+REMOTEFUNC(void __fastcall, DrawAutomap, (), 0x45ad60);
+REMOTEFUNC(void __fastcall, DrawSprites, (), 0x4F9870);
 
 /**
  * Drawing hooks.
@@ -38,7 +37,7 @@ void gameAutomapDraw() {
     for (Feature* f = Features; f; f = f->next) {
         f->gameAutomapPreDraw();
     }
-    D2::DrawAutomap();
+    DrawAutomap();
     for (Feature* f = Features; f; f = f->next) {
         f->gameAutomapPostDraw();
     }
@@ -46,7 +45,7 @@ void gameAutomapDraw() {
 
 void oogDraw() {
     State["inGame"] = false;
-    D2::DrawSprites();
+    DrawSprites();
     D2::GetScreenModeSize(D2::GetScreenMode(), &D2::ScreenWidth, &D2::ScreenHeight);
     DWORD old = D2::SetFont(DEFAULT_FONT);
     for (Feature* f = Features; f; f = f->next) {

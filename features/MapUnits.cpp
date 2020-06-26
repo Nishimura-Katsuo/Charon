@@ -4,8 +4,8 @@
 
 #include "headers/feature.h"
 #include "headers/common.h"
-#include "headers/pointers.h"
 #include "headers/hook.h"
+#include "headers/remote.h"
 #include <iostream>
 
 DWORD ItemRarityColor[32] = { 255, 29, 30, 32, 151, 132, 111, 155, 111 };
@@ -18,7 +18,7 @@ public:
     }
 
     void gameUnitPreDraw() {
-        D2::Types::UnitAny* player = D2::GetPlayerUnit();
+        D2::Types::UnitAny* player = D2::PlayerUnit;
         if (player) {
             D2::Types::Level* level = player->pPath->pRoom1->pRoom2->pLevel;
             if (level) {

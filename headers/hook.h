@@ -7,13 +7,6 @@
 #include <cstring>
 #include <vector>
 
-namespace ASM {
-    const BYTE NOP = 0x90;
-    const BYTE CALL = 0xE8;
-    const BYTE JUMP = 0xE9;
-    const BYTE RET = 0xC3;
-}
-
 class BYTES {
     BYTE value;
     size_t length;
@@ -88,3 +81,12 @@ public:
     MemoryPatch& operator << (const REVERT revert);
     MemoryPatch& operator << (BYTESEQ bytes);
 };
+
+namespace ASM {
+    const BYTE NOP = 0x90;
+    const BYTE CALL = 0xE8;
+    const BYTE JUMP = 0xE9;
+    const BYTE RET = 0xC3;
+    const BYTE PUSHAD = 0x60;
+    const BYTE POPAD = 0x61;
+}

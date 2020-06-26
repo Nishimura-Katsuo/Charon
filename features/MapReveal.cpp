@@ -6,8 +6,8 @@
 
 #include "headers/feature.h"
 #include "headers/common.h"
-#include "headers/pointers.h"
 #include "headers/hook.h"
+#include "headers/remote.h"
 #include <iostream>
 #include <cmath>
 
@@ -16,7 +16,7 @@ REMOTEFUNC(D2::Types::AutomapCell* __fastcall, NewAutomapCell, (), 0x457C30)
 REMOTEFUNC(void __fastcall, AddAutomapCell, (D2::Types::AutomapCell* aCell, D2::Types::AutomapCell** node), 0x457B00)
 REMOTEFUNC(void __stdcall, RevealAutomapRoom, (D2::Types::Room1* pRoom1, DWORD dwClipFlag, D2::Types::AutomapLayer* aLayer), 0x458F40)
 REMOTEFUNC(D2::Types::AutomapLayer* __fastcall, InitAutomapLayer_I, (DWORD nLayerNo), 0x458D40)
-REMOTEVAR(D2::Types::AutomapLayer*, AutomapLayer, 0x7A5164)
+REMOTEREF(D2::Types::AutomapLayer*, AutomapLayer, 0x7A5164)
 
 class FoundExit {
 public:
@@ -50,7 +50,7 @@ public:
             revealdata.clear();
             inGame = true;
         }
-        D2::Types::UnitAny* me = D2::PlayerUnit[0];
+        D2::Types::UnitAny* me = D2::PlayerUnit;
 
         if (me && me->pPath && me->pPath->pRoom1 && me->pPath->pRoom1->pRoom2 && me->pPath->pRoom1->pRoom2->pLevel) {
             DWORD levelno = me->pPath->pRoom1->pRoom2->pLevel->dwLevelNo;
@@ -71,7 +71,7 @@ public:
     }
 
     void gameAutomapPostDraw() {
-        D2::Types::UnitAny* player = D2::GetPlayerUnit();
+        D2::Types::UnitAny* player = D2::PlayerUnit;
         if (player) {
             D2::Types::Level* level = player->pPath->pRoom1->pRoom2->pLevel;
             if (level) {
@@ -107,7 +107,7 @@ public:
     }
 
     void RevealCurrentLevel() {
-        D2::Types::UnitAny* me = D2::PlayerUnit[0];
+        D2::Types::UnitAny* me = D2::PlayerUnit;
 
         if (me) {
             D2::Types::Level* level = me->pPath->pRoom1->pRoom2->pLevel;

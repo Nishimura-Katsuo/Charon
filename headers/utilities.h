@@ -12,6 +12,7 @@ public:
 };
 
 extern DPOINT xvector, yvector;
+void DrawRectangle(POINT a, POINT b, DWORD dwColor);
 void DrawLine(POINT a, POINT b, DWORD dwColor);
 POINT WorldToScreen(DPOINT pos);
 POINT WorldToScreen(D2::Types::Path* path, DPOINT adjust = { 0, 0 });

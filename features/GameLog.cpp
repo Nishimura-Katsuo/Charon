@@ -1,8 +1,11 @@
 #include "headers/feature.h"
 #include "headers/common.h"
-#include "headers/pointers.h"
 #include "headers/hook.h"
+#include "headers/remote.h"
 #include <list>
+
+REMOTEFUNC(void __fastcall, PrintGameString, (const wchar_t* wMessage, int nColor), 0x49E3A0)
+REMOTEFUNC(void __fastcall, PrintPartyString, (const wchar_t* wMessage, int nColor), 0x49E5C0) // Updated 1.14d //0049E5C0-BASE
 
 struct GameLogMessage {
     DWORD timestamp;
@@ -49,7 +52,7 @@ namespace GameLog {
 
         void gamePostDraw() {
             while (!GameLogMessages.empty()) {
-                D2::PrintGameString(GameLogMessages.front().text.c_str(), 0);
+                PrintGameString(GameLogMessages.front().text.c_str(), 0);
                 GameLogMessages.pop_front();
             }
         }

@@ -5,9 +5,15 @@
  */
 #include "headers/feature.h"
 #include "headers/common.h"
-#include "headers/pointers.h"
 #include "headers/hook.h"
+#include "headers/remote.h"
 #include <iostream>
+
+REMOTEFUNC(void __fastcall, ChatInput, (wchar_t* wMsg), 0x4787B0)
+
+DWORD keyPress = 0x46A847;
+DWORD keyPress_II = 0x46A854;
+DWORD keyPress_III = 0x46A93B;
 
 BOOL __fastcall chatInput(wchar_t* wMsg) {
     try {
@@ -29,7 +35,7 @@ void __declspec(naked) _chatInput() {
         cmp eax, 0
         popad
         je BlockIt
-        call D2::ChatInput
+        call ChatInput
         ret
 
         BlockIt :
@@ -40,12 +46,12 @@ void __declspec(naked) _chatInput() {
 
 BOOL __fastcall keyPressEvent(WPARAM wparam, LPARAM lparam) {
 
-    BOOL chatBox = State["inGame"] && D2::GetUiFlag(0x05);
-    BOOL escMenu = State["inGame"] && D2::GetUiFlag(0x09);
+    BOOL chatBox = D2::GetUiFlag(0x05);
+    BOOL escMenu = D2::GetUiFlag(0x09);
 
     //gamelog << COLOR(4) << "chatbox: " << chatBox << "\t" << "escMenu: " << escMenu << "\t" << wparam <<"\t" << lparam << std::endl;
 
-    if (!chatBox && !escMenu) {
+    if (State["inGame"] && !chatBox && !escMenu) {
 
         char keycode = static_cast<char>(wparam);
 
@@ -74,10 +80,10 @@ void __declspec(naked) _keyPressIntercept() {
         jne block  // jump not equal
 
         // not blocked
-        jmp[D2::keyPress_II]
+        jmp[keyPress_II]
 
         block:
-        jmp[D2::keyPress_III] // block key for d2
+        jmp[keyPress_III] // block key for d2
     }
 }
 
@@ -88,6 +94,6 @@ public:
         MemoryPatch(0x47C89D) << CALL(_chatInput); // Intercept game input
 
         // Override the d2 internal function of pressing a key
-        MemoryPatch(D2::keyPress) << JUMP(_keyPressIntercept) << ASM::NOP;
+        MemoryPatch(keyPress) << JUMP(_keyPressIntercept) << ASM::NOP;
     }
 } feature;

@@ -4,14 +4,16 @@
 
 #include "headers/feature.h"
 #include "headers/common.h"
-#include "headers/pointers.h"
 #include "headers/hook.h"
+#include "headers/remote.h"
 #include <iostream>
+
+REMOTEREF(int, DrawAutoMapStatsOffsetY, 0x7A51BC);
 
 void _drawAutoMapInfo(DWORD size) {
     DWORD width = 0, height = 0, fileno = 1;
     height = D2::GetTextSize(L"test", &width, &fileno);
-    DWORD bottom = *D2::DrawAutoMapStatsOffsetY - height;
+    DWORD bottom = DrawAutoMapStatsOffsetY - height;
     for (AutomapInfoCallback func : AutomapInfoHooks) {
         std::wstring msg = func();
         bottom += D2::GetTextSize(msg.c_str(), &width, &fileno);
@@ -47,7 +49,7 @@ public:
             return msg;
         });
 
-        *D2::NoPickUp = true;
+        D2::NoPickUp = true;
     }
 
     void oogPostDraw() {

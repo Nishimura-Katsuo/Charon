@@ -3,12 +3,39 @@
 #include "../headers/D2Structs.h"
 #include "../headers/common.h"
 #include "../headers/feature.h"
-#include "../headers/pointers.h"
 #include "../headers/utilities.h"
+#include "../headers/remote.h"
 #include <iostream>
 #include <cmath>
 
+
+REMOTEFUNC(void __stdcall, D2Drawline, (int X1, int Y1, int X2, int Y2, DWORD dwColor, DWORD dwAlpha), 0x4F6380)
+REMOTEFUNC(void __stdcall, D2DrawRectangle, (int X1, int Y1, int X2, int Y2, DWORD dwColor, DWORD dwAlpha), 0x4F6340)
+REMOTEFUNC(long __fastcall, GetMouseXOffset, (), 0x45AFC0)
+REMOTEFUNC(long __fastcall, GetMouseYOffset, (), 0x45AFB0)
+REMOTEREF(POINT, AutomapOffset, 0x7A5198)
+REMOTEREF(int, Divisor, 0x711254)
+
+namespace D2 {
+    int ScreenWidth = 0, ScreenHeight = 0;
+
+    namespace Defs {
+        typedef POINT p_t;
+    }
+}
+
 DPOINT xvector = { 16.0, 8.0 }, yvector = { -16.0, 8.0 };
+
+void DrawRectangle(POINT a, POINT b, DWORD dwColor) {
+    if (
+        a.x >= 0 && a.x < D2::ScreenWidth ||
+        b.x >= 0 && b.x < D2::ScreenWidth ||
+        a.y >= 0 && a.y < D2::ScreenHeight ||
+        b.y >= 0 && b.y < D2::ScreenHeight
+        ) {
+        D2DrawRectangle(a.x, a.y, b.x, b.y, dwColor, 0xFF);
+    }
+}
 
 void DrawLine(POINT a, POINT b, DWORD dwColor) {
     if (
@@ -17,14 +44,14 @@ void DrawLine(POINT a, POINT b, DWORD dwColor) {
         a.y >= 0 && a.y < D2::ScreenHeight ||
         b.y >= 0 && b.y < D2::ScreenHeight
     ) {
-        D2::DrawLine(a.x, a.y, b.x, b.y, dwColor, 0xFF);
+        D2Drawline(a.x, a.y, b.x, b.y, dwColor, 0xFF);
     }
 }
 
 POINT WorldToScreen(DPOINT pos) {
     POINT ret{
-        (long)(pos.x * xvector.x + pos.y * yvector.x) - D2::GetMouseXOffset(),
-        (long)(pos.x * xvector.y + pos.y * yvector.y) - D2::GetMouseYOffset()
+        (long)(pos.x * xvector.x + pos.y * yvector.x) - GetMouseXOffset(),
+        (long)(pos.x * xvector.y + pos.y * yvector.y) - GetMouseYOffset()
     };
     return ret;
 }
@@ -35,8 +62,8 @@ POINT WorldToScreen(D2::Types::Path *path, DPOINT adjust) {
 
 POINT WorldToAutomap(DPOINT pos) {
     POINT ret{
-        (long)((pos.x * xvector.x + pos.y * yvector.x) / (double)*D2::Divisor) - D2::Offset->x + 8,
-        (long)((pos.x * xvector.y + pos.y * yvector.y) / (double)*D2::Divisor) - D2::Offset->y - 8
+        (long)((pos.x * xvector.x + pos.y * yvector.x) / (double)Divisor) - AutomapOffset.x + 8,
+        (long)((pos.x * xvector.y + pos.y * yvector.y) / (double)Divisor) - AutomapOffset.y - 8
     };
     return ret;
 }

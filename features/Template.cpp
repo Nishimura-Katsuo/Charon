@@ -1,6 +1,5 @@
 #include "headers/feature.h"
 #include "headers/common.h"
-#include "headers/pointers.h"
 #include "headers/hook.h"
 
 namespace Template {

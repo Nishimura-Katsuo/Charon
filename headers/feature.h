@@ -48,6 +48,3 @@ extern HotkeyCallbackMap HotkeyCallbacks;
 extern AutomapInfoCallbackList AutomapInfoHooks;
 extern InputCallbackMap ChatInputCallbacks;
 extern StateMap State;
-
-#define REMOTEFUNC(r, n, a, o) namespace D2 { namespace FuncDefs { typedef r n a; } } D2::FuncDefs::n *n = (D2::FuncDefs::n*)o;
-#define REMOTEVAR(t, n, o) namespace D2 { namespace VarDefs { typedef t n; } } D2::VarDefs::n &n = *(D2::VarDefs::n *)o;

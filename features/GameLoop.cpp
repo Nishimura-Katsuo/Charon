@@ -4,7 +4,6 @@
 
 #include "headers/feature.h"
 #include "headers/common.h"
-#include "headers/pointers.h"
 #include "headers/hook.h"
 #include <iostream>
 #include <chrono>
@@ -26,7 +25,7 @@ void _oogLoop() {
 // Keeps the game at a steady framerate without using too much CPU.
 // D2 doesn't do a great job at it by default, so we're helping out.
 void throttle() {
-    using frameDuration = std::chrono::duration<int64_t, std::ratio<1, 50>>; // Cap the game to 50 fps always
+    using frameDuration = std::chrono::duration<int64_t, std::ratio<40, 1000>>; // Wait for 40ms (25 fps)
     using std::chrono::system_clock;
     using std::this_thread::sleep_until;
     static system_clock::time_point nextFrame = system_clock::now(), now;

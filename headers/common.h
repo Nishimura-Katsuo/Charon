@@ -6,13 +6,8 @@
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 
 #include <windows.h>
-#include <vector>
-#include <iostream>
 #include <string>
-#include <unordered_map>
-#include <functional>
 #include <sstream>
-#include <iomanip>
 
 class GameOutput : public std::wostream {
     class GameOutputBuffer : public std::wstringbuf {
