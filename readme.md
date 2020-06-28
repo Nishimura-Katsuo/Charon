@@ -16,3 +16,5 @@ A note about 'Always in Direct 3D Mode':
 This project is currently in a pre-release state, so to use it you'll need to compile it with Visual Studio 2019. Once you've compiled the project you must load Charon.dll into the game using [https://github.com/Nishimura-Katsuo/DLLLoader]. Loading it with traditional injection techniques may work, but will most likely crash or not function properly, since this is written to operate completely on Diablo 2's main thread for stability.
 
 A lot of hard work is being put in by us at [https://github.com/blizzhackers](Blizzhackers) to bring you this tool with love.
+
+>I see him there at the oars of his little boat in the lake, the ferryman of the dead, Kharon (Charon), with his hand upon the oar and he calls me now. ~Alcestis (from Alcestis by Euripides)
