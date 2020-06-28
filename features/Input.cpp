@@ -9,55 +9,54 @@
 #include "headers/remote.h"
 #include <iostream>
 
-const ASMPTR keyPressHookStart = 0x46A847;
-const ASMPTR keyPressHookEnd = 0x46A854;
-const ASMPTR keyPress_II = 0x46A854;
-const ASMPTR keyPress_III = 0x46A93B;
 const ASMPTR SoundChaosCheckStart = 0x47c53d;
 const ASMPTR SoundChaosCheckEnd = 0x47c559;
 const DWORD SuccessfulCommandAddress = 0x47ca4f;
+WNDPROC OldWndProc;
 
-BOOL __fastcall keyPressEvent(WPARAM wparam, LPARAM lparam) {
+BOOL keyPressEvent(WPARAM wparam, LPARAM lparam) {
 
     BOOL chatBox = D2::GetUiFlag(0x05);
     BOOL escMenu = D2::GetUiFlag(0x09);
 
     //gamelog << COLOR(4) << "chatbox: " << chatBox << "\t" << "escMenu: " << escMenu << "\t" << wparam <<"\t" << lparam << std::endl;
 
-    if (State["inGame"] && !chatBox && !escMenu) {
+    if (!State["inGame"] || !chatBox && !escMenu) {
 
         char keycode = static_cast<char>(wparam);
 
         HotkeyMapIterator it = HotkeyCallbacks.find(keycode);
         if (it != HotkeyCallbacks.end()) {
             HotkeyCallback cb = it->second;
-            if (cb(lparam)) {
-                return true;
-            }
+            return cb(lparam);
         }
     }
 
-    return false;
+    return true;
 }
 
-void __declspec(naked) _keyPressIntercept() {
-    __asm {
+LRESULT CALLBACK WindowProc(_In_ HWND hwnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam) {
+    HDC hdc;
+    PAINTSTRUCT ps;
 
-        mov ecx, [edi + 0x08] //(wparam)
-        mov edx, [edi + 0x0c] //(lparam)
-
-        call keyPressEvent
-        cmp eax, 0
-
-        // need a separated label for this, cant make that big of a jump in jne
-        jne block  // jump not equal
-
-        // not blocked
-        jmp[keyPress_II]
-
-        block:
-        jmp[keyPress_III] // block key for d2
+    switch (uMsg) {
+    case WM_KEYDOWN:
+        if (!(lParam & 0x40000000) && !keyPressEvent(wParam, lParam)) {
+            return 0;
+        }
+        break;
+    case WM_SYSKEYDOWN:
+        if (!(lParam & 0x40000000) && !keyPressEvent(wParam, lParam)) {
+            return 0;
+        }
+        break;
     }
+    return OldWndProc(hwnd, uMsg, wParam, lParam);
+}
+ATOM __stdcall RegisterClassAHook(WNDCLASSA* lpWndClass) {
+    OldWndProc = lpWndClass->lpfnWndProc;
+    lpWndClass->lpfnWndProc = WindowProc;
+    return RegisterClassA(lpWndClass);
 }
 
 REMOTEFUNC(void, SoundChaosDebug, (), 0x4BABC0);
@@ -88,9 +87,7 @@ public:
             << JUMP_ZERO(SuccessfulCommandAddress)
             << NOP_TO(SoundChaosCheckEnd);
 
-        MemoryPatch(keyPressHookStart)
-            << JUMP(_keyPressIntercept)
-            << NOP_TO(keyPressHookEnd);
+        MemoryPatch(0x4f5379) << CALL(RegisterClassAHook) << ASM::NOP;
 
         // Since we patched this out, we should probably re-implement it
         ChatInputCallbacks[L"soundchaosdebug"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
