@@ -124,4 +124,5 @@ namespace ASM {
     const BYTESEQ TEST_AL{ 0x84, 0xC0 };
     const BYTESEQ TEST_EAX{ 0x85, 0xC0 };
     const BYTESEQ MOV_ECX_EDI{ 0x89, 0xF9 };
+    const BYTESEQ MOV_ECX_EAX{ 0x89, 0xC1 };
 }

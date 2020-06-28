@@ -823,6 +823,22 @@ namespace D2 {
             TransactionDialogsLine_t dialogLines[10]; // 0x068
             void* something;                          // 0xB08
         };
+
+        // This is incomplete! Not the correct length! Use only for pointers!
+        struct IniConfigStrc {
+            char bD2ExpMpqExistsOrLanugageCode[4];
+            BOOL bCRASHAPP;
+            bool bWINDOW;
+            bool bASPECT;
+            bool b3DFX;
+            bool bOPENGL;
+            bool bRAVE;
+            bool bD3D;
+            bool bPERSPECTIVE;
+            bool bQUALITY;
+            int nGAMMA;
+            bool bVSYNC;
+        };
     }
 }
 

@@ -17,7 +17,12 @@ namespace ExperienceMod {
         void init() {
             gamelog << COLOR(4) << "Installing experience modifier..." << std::endl;
             // Rewrite players count modification and leave to our handler - 42 bytes total
-            MemoryPatch(0x47c4e4) << ASM::PUSHAD << BYTESEQ{ 0x89, 0xC1 } /* mov ECX, EAX */ << CALL(SetPlayerCount) << ASM::POPAD << BYTES(ASM::NOP, 33);
+            MemoryPatch(0x47c4e4)
+                << ASM::PUSHAD
+                << ASM::MOV_ECX_EAX
+                << CALL(SetPlayerCount)
+                << ASM::POPAD
+                << NOP_TO(0x47c50e);
         }
     } feature;
 
