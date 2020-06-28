@@ -1,0 +1,221 @@
+#include "headers/feature.h"
+#include "headers/common.h"
+#include "headers/hook.h"
+#include "headers/remote.h"
+#include <d3d.h>
+#include <iostream>
+
+REMOTEREF(DWORD, InternalWidth, 0x7c9138);
+REMOTEREF(DWORD, InternalHeight, 0x7c913c);
+REMOTEREF(DWORD, ScreenWidth, 0x71146c);
+REMOTEREF(DWORD, ScreenHeight, 0x711470);
+REMOTEREF(DWORD, ScreenMode, 0x7a5218);
+REMOTEREF(DWORD, Dunno, 0x7a2858);
+REMOTEREF(BOOL, FixAspect, 0x72da7c);
+REMOTEREF(LPDIRECTDRAW7, IDirectDraw, 0x970e60);
+REMOTEREF(LPDIRECT3D3, IDirect3D, 0x970e64);
+REMOTEREF(LPDIRECTDRAWSURFACE7, D3DSurfacePrimary, 0x970e68);
+REMOTEREF(LPDIRECTDRAWSURFACE7, D3DSurfaceSecondary, 0x970e6c);
+REMOTEREF(LPDIRECT3DDEVICE3, Direct3DDevice, 0x970e78);
+REMOTEREF(LPDIRECT3DVIEWPORT3, Direct3DViewport, 0x970e7c);
+REMOTEREF(HWND, hWnd, 0x7c8cbc);
+REMOTEPTR(BYTE, light, 0x971738);
+REMOTEPTR(DWORD, unknownInBeginScene, 0x970e54);
+
+LPDIRECTDRAWSURFACE7 D3DSurfaceBackground = nullptr;
+bool bD3DFull = false;
+bool repaintsides = false;
+DWORD dwOldStyle = 0;
+
+void D3D_DirectDrawScreenSetup() {
+    InternalWidth = 800;
+    InternalHeight = 600;
+    IDirectDraw->SetCooperativeLevel(hWnd, DDSCL_NORMAL);
+    if (!dwOldStyle) {
+        dwOldStyle = GetWindowLong(hWnd, GWL_STYLE);
+        dwOldStyle &= ~WS_MAXIMIZEBOX;
+        SetWindowLong(hWnd, GWL_STYLE, dwOldStyle);
+    }
+}
+
+void ScreenSizeHook() {
+    ScreenWidth = InternalWidth;
+    ScreenHeight = InternalHeight;
+    ScreenMode = 1;
+}
+
+void __stdcall GetWindowSizeByResolutionMode(int res, long* nWidth, long* nHeight) {
+    *nWidth = InternalWidth;
+    *nHeight = InternalHeight;
+}
+
+void ToggleFullscreen() {
+    bD3DFull = !bD3DFull;
+
+    if (bD3DFull) {
+        dwOldStyle = GetWindowLong(hWnd, GWL_STYLE);
+        ShowWindow(hWnd, SW_RESTORE);
+        SetWindowLong(hWnd, GWL_STYLE, dwOldStyle & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU));
+        ShowWindow(hWnd, SW_MAXIMIZE);
+    }
+    else {
+        ShowWindow(hWnd, SW_RESTORE);
+        SetWindowLong(hWnd, GWL_STYLE, dwOldStyle);
+    }
+
+    repaintsides = true;
+    SetWindowPos(hWnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+}
+
+void __cdecl LogFileDivert(char* format, ...) {
+    int res;
+    va_list list;
+    va_start(list, format);
+    res = _vfprintf_l(stdout, format, NULL, list);
+    va_end(list);
+    puts("");
+    return;
+}
+
+HRESULT __stdcall CreatePrimarySurfaceIntercept(IDirectDraw7* ddi, LPDDSURFACEDESC2 ddsd, LPDIRECTDRAWSURFACE7* ppSurface, IUnknown* unknown) {
+    DDSURFACEDESC2 caps{ sizeof(DDSURFACEDESC2) };
+    ddsd->dwFlags = DDSD_CAPS;
+    ddsd->dwBackBufferCount = 0;
+    ddsd->dwDepth = 1;
+    ddsd->ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE | DDSCAPS_3DDEVICE;
+
+    HRESULT ret = ddi->CreateSurface(ddsd, ppSurface, unknown);
+
+    if (ret == DD_OK) {
+        IDirectDrawClipper* Clipper;
+        IDirectDraw->CreateClipper(0, &Clipper, NULL);
+        Clipper->SetHWnd(0, hWnd);
+        ppSurface[0]->SetClipper(Clipper);
+        Clipper->Release();
+    }
+
+    if (D3DSurfaceBackground == nullptr) {
+        DDSURFACEDESC2 caps2{ sizeof(DDSURFACEDESC2) };
+        caps2.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS;
+        caps2.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN;
+        caps2.dwWidth = 32;
+        caps2.dwHeight = 32;
+        IDirectDraw->CreateSurface(&caps2, &D3DSurfaceBackground, NULL);
+    }
+
+    return ret;
+}
+
+HRESULT __stdcall CreateSecondarySurfaceIntercept(IDirectDrawSurface7* dds, LPDDSCAPS2 ddsc, LPDIRECTDRAWSURFACE7* ppSurface) {
+    DDSURFACEDESC2 caps{ sizeof(DDSURFACEDESC2) };
+    caps.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS;
+    caps.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_3DDEVICE;
+    caps.dwWidth = InternalWidth;
+    caps.dwHeight = InternalHeight;
+    return IDirectDraw->CreateSurface(&caps, ppSurface, NULL);
+}
+
+void ClearScreen() {
+    D3DRECT r{ 0, 0, (long)InternalWidth, (long)InternalHeight };
+    Direct3DViewport->Clear2(1, &r, D3DCLEAR_TARGET, 0xFF000000, 0, 0);
+}
+
+DWORD BeginScene() {
+    Direct3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_POINT);
+    Direct3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFG_POINT);
+    return true;
+}
+
+void __fastcall SetLight(BYTE r, BYTE g, BYTE b) {
+    light[0] = 128;
+    light[1] = 0;
+    light[2] = 0;
+}
+
+BOOL __fastcall FlipSurfaces() {
+    RECT windowrect, targetrect{ 0 };
+
+    GetClientRect(hWnd, &windowrect);
+    MapWindowPoints(hWnd, NULL, (LPPOINT)&windowrect, 2);
+
+    long newwidth = (windowrect.bottom - windowrect.top) * InternalWidth / InternalHeight;
+    targetrect.top = windowrect.top;
+    targetrect.bottom = windowrect.bottom;
+    targetrect.left = (windowrect.left + windowrect.right - newwidth) / 2;
+    targetrect.right = targetrect.left + newwidth;
+
+    if (repaintsides) {
+        D3DSurfacePrimary->Blt(&windowrect, D3DSurfaceBackground, NULL, DDBLT_WAIT, NULL);
+        repaintsides = false;
+    }
+
+    DDBLTFX fx{ 0 };
+    fx.dwSize = sizeof(DDBLTFX);
+    D3DSurfacePrimary->Blt(&targetrect, D3DSurfaceSecondary, NULL, DDBLT_WAIT, &fx);
+
+    return TRUE;
+}
+
+void __fastcall UpdateD2INI(D2::Types::IniConfigStrc* d2ini) {
+    d2ini->bASPECT = d2ini->bD3D = true;
+    d2ini->bWINDOW = d2ini->b3DFX = d2ini->bOPENGL = d2ini->bRAVE = false;
+}
+
+BOOL __stdcall SetWindowPosStub(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags) {
+    return true;
+}
+
+namespace AlwaysD3D {
+
+    class : public Feature {
+    public:
+        void init() {
+            gamelog << COLOR(4) << "Always D3D installed..." << std::endl;
+            // Prevent calls to moving the window
+            MemoryPatch(0x4f58e0) << CALL(SetWindowPosStub) << ASM::NOP;
+            MemoryPatch(0x4f5b8b) << CALL(SetWindowPosStub) << ASM::NOP;
+            //MemoryPatch(0x4f5d19) << CALL(SetWindowPosStub) << ASM::NOP;
+            MemoryPatch(0x4f9eac) << CALL(SetWindowPosStub) << ASM::NOP;
+            MemoryPatch(0x4f9ef6) << CALL(SetWindowPosStub) << ASM::NOP;
+
+            MemoryPatch(0x405cb3)
+                << BYTESEQ{ 0xc7, 0x45, 0x08 }
+                << DWORD(6)
+                << BYTESEQ{ 0x8d, 0x0e }
+                << CALL(UpdateD2INI)
+                << NOP_TO(0x405ced); // Force this renderer
+            // MemoryPatch(0x6b9716) << NOP_TO(0x6b9727); // Disable global lighting to manually control it.
+            MemoryPatch(0x405cf1)
+                << BYTESEQ{ 0xb3, 0x01, ASM::NOP } // Force this window mode
+            << NOP_TO(0x405cf7);
+            MemoryPatch(0x4f9050)
+                << BYTESEQ{ 0x31, 0xC0 }
+            << ASM::RET; // Skip all videos; xor EAX and return
+            MemoryPatch(0x6b5003)
+                << CALL(D3D_DirectDrawScreenSetup)
+                << NOP_TO(0x6b5046)
+                << SKIP(10)
+                << NOP_TO(0x6b50d4); // Override resolution, coop level, and screen mode
+            MemoryPatch(0x410610) << JUMP(LogFileDivert);
+            MemoryPatch(0x6b5130) << CALL(CreatePrimarySurfaceIntercept);
+            MemoryPatch(0x6b517d) << CALL(CreateSecondarySurfaceIntercept);
+            MemoryPatch(0x6b1c30) << JUMP(FlipSurfaces);
+            MemoryPatch(0x6b57be) << CALL(BeginScene) << BYTESEQ{ 0xc2, 0x08, 0x00 };
+            MemoryPatch(0x6b5796) << CALL(SetLight);
+            MemoryPatch(0x4f5570) << JUMP(GetWindowSizeByResolutionMode);
+            MemoryPatch(0x44ba30) << CALL(ScreenSizeHook) << NOP_TO(0x44ba7c);
+            MemoryPatch(0x6b2030) << ASM::RET; // Disable min/mag filters.
+
+
+            HotkeyCallbacks[VK_RETURN] = [&](LPARAM options) -> BOOL {
+                if (options & 0x20000000) {
+                    ToggleFullscreen();
+                    return FALSE;
+                }
+
+                return TRUE;
+            };
+        }
+    } feature;
+
+}
