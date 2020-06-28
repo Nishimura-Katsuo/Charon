@@ -4,6 +4,8 @@
 #include "headers/remote.h"
 #include <d3d.h>
 #include <iostream>
+#include <chrono>
+#include <thread>
 
 REMOTEREF(DWORD, InternalWidth, 0x7c9138);
 REMOTEREF(DWORD, InternalHeight, 0x7c913c);
@@ -30,10 +32,10 @@ DWORD dwOldStyle = 0;
 void D3D_DirectDrawScreenSetup() {
     InternalWidth = 800;
     InternalHeight = 600;
-    IDirectDraw->SetCooperativeLevel(hWnd, DDSCL_NORMAL);
+    IDirectDraw->SetCooperativeLevel(hWnd, DDSCL_NORMAL | DDSCL_NOWINDOWCHANGES);
     if (!dwOldStyle) {
         dwOldStyle = GetWindowLong(hWnd, GWL_STYLE);
-        dwOldStyle &= ~WS_MAXIMIZEBOX;
+        dwOldStyle &= ~(WS_MAXIMIZEBOX | WS_EX_TOPMOST);
         SetWindowLong(hWnd, GWL_STYLE, dwOldStyle);
     }
 }
@@ -53,7 +55,6 @@ void ToggleFullscreen() {
     bD3DFull = !bD3DFull;
 
     if (bD3DFull) {
-        dwOldStyle = GetWindowLong(hWnd, GWL_STYLE);
         ShowWindow(hWnd, SW_RESTORE);
         SetWindowLong(hWnd, GWL_STYLE, dwOldStyle & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU));
         ShowWindow(hWnd, SW_MAXIMIZE);
@@ -120,9 +121,32 @@ void ClearScreen() {
     Direct3DViewport->Clear2(1, &r, D3DCLEAR_TARGET, 0xFF000000, 0, 0);
 }
 
+// Keeps the game at a steady framerate without using too much CPU.
+// D2 doesn't do a great job at it by default, so we're helping out.
+void throttle() {
+    using frameDuration = std::chrono::duration<int64_t, std::ratio<40, 1000>>; // Wait for 40ms (25 fps)
+    using std::chrono::system_clock;
+    using std::this_thread::sleep_until;
+    static system_clock::time_point nextFrame = system_clock::now(), now;
+
+    now = system_clock::now();
+    if (now < nextFrame) {
+        sleep_until(nextFrame);
+        nextFrame += frameDuration{ 1 };
+    }
+    else {
+        nextFrame = system_clock::now() + frameDuration{ 1 };
+    }
+}
+
 DWORD BeginScene() {
     Direct3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_POINT);
     Direct3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFG_POINT);
+    D3DVIEWPORT v{ 0 };
+    if (Direct3DViewport->GetViewport(&v) == DD_OK) {
+        Direct3DViewport->SetViewport(&v);
+    }
+    
     return true;
 }
 
@@ -134,6 +158,8 @@ void __fastcall SetLight(BYTE r, BYTE g, BYTE b) {
 
 BOOL __fastcall FlipSurfaces() {
     RECT windowrect, targetrect{ 0 };
+
+    throttle();
 
     GetClientRect(hWnd, &windowrect);
     MapWindowPoints(hWnd, NULL, (LPPOINT)&windowrect, 2);
