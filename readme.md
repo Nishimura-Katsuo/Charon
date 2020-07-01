@@ -7,8 +7,10 @@ This is an experiment and utility for Diablo 2. It is intended for single player
     Display Missiles on Automap
     Display Level Exits on Automap (work in progress)
     /players X uncap (16-20 is reasonable, but very difficult)
+    Improved experience scaling for /players X by typing: /xp
     Weather toggle (press insert key)
     Always in Direct 3D Mode
+    Loading additional mpq via command line parameter: -mpq "filename.mpq"
 
 A note about 'Always in Direct 3D Mode':
     This feature causes the game to ignore command line flags that control the video, such as `-w`. The game now starts windowed every time, and you can toggle full screen mode on and off by holding Alt and pressing Enter (Alt+Enter). We're currently trying to understand how the game uses the rendering API, and we'll be looking to update the renderer to newer APIs, since the game currently uses DirectDraw v7 and Direct3D v3.
