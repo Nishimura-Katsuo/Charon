@@ -42,6 +42,7 @@ namespace D2 {
 	GLOBALFUNC(DWORD __fastcall, GetUiFlag, (DWORD dwVarNo), 0x4538D0);
 	GLOBALFUNC(void __stdcall, AddRoomData, (Types::Act* ptAct, int LevelId, int Xpos, int Ypos, D2::Types::Room1* pRoom), 0x61A070);
 	GLOBALFUNC(void __stdcall, RemoveRoomData, (Types::Act* ptAct, int LevelId, int Xpos, int Ypos, D2::Types::Room1* pRoom), 0x61A0C0);
+	GLOBALFUNC(void __stdcall, InitLevel, (Types::Level* pLevel), 0x6424A0);
 	GLOBALFUNC(Types::LevelTxt* __stdcall, GetLevelText, (DWORD levelno), 0x61DB70);
 	GLOBALFUNC(Types::ObjectTxt* __stdcall, GetObjectText, (DWORD objno), 0x640E90);
 	GLOBALFUNC(Types::ItemTxt* __stdcall, GetItemText, (DWORD itemno), 0x6335F0);
@@ -53,4 +54,3 @@ namespace D2 {
 #define REMOTEFUNC(r, n, a, o) namespace FuncDefs { typedef r n a; } FuncDefs::n *n = (FuncDefs::n*)o;
 #define REMOTEREF(t, n, o) namespace VarDefs { typedef t n; } VarDefs::n &n = *(VarDefs::n *)o;
 #define REMOTEPTR(t, n, o) namespace VarDefs { typedef t n; } VarDefs::n *n = (VarDefs::n *)o;
-

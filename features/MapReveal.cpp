@@ -11,12 +11,12 @@
 #include <iostream>
 #include <cmath>
 
-REMOTEFUNC(DWORD __stdcall, GetAutomapSize, (void), 0x45A710)
-REMOTEFUNC(D2::Types::AutomapCell* __fastcall, NewAutomapCell, (), 0x457C30)
-REMOTEFUNC(void __fastcall, AddAutomapCell, (D2::Types::AutomapCell* aCell, D2::Types::AutomapCell** node), 0x457B00)
-REMOTEFUNC(void __stdcall, RevealAutomapRoom, (D2::Types::Room1* pRoom1, DWORD dwClipFlag, D2::Types::AutomapLayer* aLayer), 0x458F40)
-REMOTEFUNC(D2::Types::AutomapLayer* __fastcall, InitAutomapLayer_I, (DWORD nLayerNo), 0x458D40)
-REMOTEREF(D2::Types::AutomapLayer*, AutomapLayer, 0x7A5164)
+REMOTEFUNC(DWORD __stdcall, GetAutomapSize, (void), 0x45A710);
+REMOTEFUNC(D2::Types::AutomapCell* __fastcall, NewAutomapCell, (), 0x457C30);
+REMOTEFUNC(void __fastcall, AddAutomapCell, (D2::Types::AutomapCell* aCell, D2::Types::AutomapCell** node), 0x457B00);
+REMOTEFUNC(void __stdcall, RevealAutomapRoom, (D2::Types::Room1* pRoom1, DWORD dwClipFlag, D2::Types::AutomapLayer* aLayer), 0x458F40);
+REMOTEFUNC(D2::Types::AutomapLayer2* __fastcall, GetLayer, (DWORD dwLevelNo), 0x61E470);
+REMOTEREF(D2::Types::AutomapLayer*, AutomapLayer, 0x7A5164);
 
 class FoundExit {
 public:
@@ -28,6 +28,7 @@ public:
 struct RevealData {
     bool isRevealed = false;
     D2::Types::Room2* room2 = nullptr;
+    D2::Types::AutomapLayer* layer = nullptr;
 };
 
 // This feature class registers itself.
@@ -59,7 +60,7 @@ public:
                 revealStart = GetTickCount();
             }
 
-            if (GetTickCount() - revealStart > 150) {
+            if (GetTickCount() - revealStart > 200) {
                 RevealCurrentLevel();
             }
         }
@@ -108,32 +109,32 @@ public:
 
     void RevealCurrentLevel() {
         D2::Types::UnitAny* me = D2::PlayerUnit;
+        int c = 20;
 
-        if (me) {
-            D2::Types::Level* level = me->pPath->pRoom1->pRoom2->pLevel;
-
+        if (me) for (D2::Types::Level* level = me->pAct->pMisc->pLevelFirst; level != nullptr; level = level->pNextLevel) {
             if (level && level->dwLevelNo > 0) {
-                if (!revealdata[level->dwLevelNo].isRevealed) {
+                if (!revealdata[level->dwLevelNo].isRevealed && level->pRoom2First != nullptr && AutomapLayer->nLayerNo == GetLayer(level->dwLevelNo)->nLayerNo) {
+                    revealdata[level->dwLevelNo].layer = AutomapLayer;
                     revealdata[level->dwLevelNo].room2 = level->pRoom2First;
                     revealdata[level->dwLevelNo].isRevealed = true;
                 }
 
                 D2::Types::Room2* room2 = revealdata[level->dwLevelNo].room2;
 
-                for (int c = 0;  c < 10 && room2 != nullptr; c++) {
+                for (; c > 0 && room2 != nullptr; c--) {
                     if (room2->pLevel && room2->pLevel->pMisc && room2->pLevel->pMisc->pAct) {
                         if (room2->pRoom1 == nullptr) {
                             D2::AddRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, room2->pRoom1);
 
                             if (room2->pRoom1 != nullptr) {
-                                RevealAutomapRoom(room2->pRoom1, TRUE, AutomapLayer);
+                                RevealAutomapRoom(room2->pRoom1, TRUE, revealdata[level->dwLevelNo].layer);
                                 CheckExits(room2);
                                 // Not sure that we need to unload the room again... we're going to need it again later.
                                 // D2::RemoveRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, room2->pRoom1);
                             }
                         }
                         else {
-                            RevealAutomapRoom(room2->pRoom1, TRUE, AutomapLayer);
+                            RevealAutomapRoom(room2->pRoom1, TRUE, revealdata[level->dwLevelNo].layer);
                             CheckExits(room2);
                         }
                     }
