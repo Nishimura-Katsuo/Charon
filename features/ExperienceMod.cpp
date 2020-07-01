@@ -5,9 +5,26 @@
 
 REMOTEREF(DWORD, PlayerCountOverride, 0x883d70);
 
+bool mult = false;
+
 void __fastcall SetPlayerCount(DWORD count) {
     PlayerCountOverride = count > 1 ? count : 1;
     gamelog << "Difficulty (players) set to " << count << std::endl;
+}
+
+int __fastcall ExperienceHook(int exp) {
+    double newxp = (double)exp;
+
+    if (mult) {
+        newxp *= (double)PlayerCountOverride * 2.7f / ((double)PlayerCountOverride + 1.0f);
+    }
+
+    exp = (int)newxp;
+
+    if (State["debugMode"]) {
+        gamelog << "Exp gained: " << exp << std::endl;
+    }
+    return exp;
 }
 
 namespace ExperienceMod {
@@ -23,6 +40,15 @@ namespace ExperienceMod {
                 << CALL(SetPlayerCount)
                 << ASM::POPAD
                 << NOP_TO(0x47c50e);
+
+            MemoryPatch(0x57e501) << ASM::MOV_ECX_EAX << CALL(ExperienceHook) << BYTESEQ{ 0xc2, 0x08, 0x00 };
+
+            ChatInputCallbacks[L"/xp"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
+                mult = !mult;
+                gamelog << "Improved players X exp scaling " << (mult ? "on" : "off") << std::endl;
+
+                return FALSE;
+            };
         }
     } feature;
 
