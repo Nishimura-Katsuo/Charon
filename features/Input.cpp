@@ -36,9 +36,6 @@ BOOL keyPressEvent(WPARAM wparam, LPARAM lparam) {
 }
 
 LRESULT CALLBACK WindowProc(_In_ HWND hwnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam) {
-    HDC hdc;
-    PAINTSTRUCT ps;
-
     switch (uMsg) {
     case WM_KEYDOWN:
         if (!(lParam & 0x40000000) && !keyPressEvent(wParam, lParam)) {
