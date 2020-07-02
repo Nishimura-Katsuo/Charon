@@ -21,7 +21,7 @@ REMOTEREF(LPDIRECTDRAWSURFACE7, D3DSurfaceSecondary, 0x970e6c);
 REMOTEREF(LPDIRECT3DDEVICE3, Direct3DDevice, 0x970e78);
 REMOTEREF(LPDIRECT3DVIEWPORT3, Direct3DViewport, 0x970e7c);
 REMOTEREF(HWND, hWnd, 0x7c8cbc);
-REMOTEPTR(BYTE, light, 0x971738);
+REMOTEREF(DWORD, GameType, 0x7a0610);
 REMOTEPTR(DWORD, unknownInBeginScene, 0x970e54);
 
 LPDIRECTDRAWSURFACE7 D3DSurfaceBackground = nullptr;
@@ -110,7 +110,7 @@ HRESULT __stdcall CreatePrimarySurfaceIntercept(IDirectDraw7* ddi, LPDDSURFACEDE
 HRESULT __stdcall CreateSecondarySurfaceIntercept(IDirectDrawSurface7* dds, LPDDSCAPS2 ddsc, LPDIRECTDRAWSURFACE7* ppSurface) {
     DDSURFACEDESC2 caps{ sizeof(DDSURFACEDESC2) };
     caps.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS;
-    caps.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_3DDEVICE;
+    caps.ddsCaps.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_3DDEVICE;
     caps.dwWidth = InternalWidth;
     caps.dwHeight = InternalHeight;
     return IDirectDraw->CreateSurface(&caps, ppSurface, NULL);
@@ -124,6 +124,11 @@ void ClearScreen() {
 // Keeps the game at a steady framerate without using too much CPU.
 // D2 doesn't do a great job at it by default, so we're helping out.
 void throttle() {
+    // Single player doesn't need throttling. It runs at 25 fps already.
+    if (State["ingame"] && GameType < 1) {
+        return;
+    }
+
     using frameDuration = std::chrono::duration<int64_t, std::ratio<40, 1000>>; // Wait for 40ms (25 fps)
     using std::chrono::system_clock;
     using std::this_thread::sleep_until;
@@ -140,20 +145,18 @@ void throttle() {
 }
 
 DWORD BeginScene() {
-    Direct3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_POINT);
-    Direct3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFG_POINT);
+    // This is the highest filtering that retains the sprite outlines properly IMO.
+    // Gaussian Cubic seems to deform the outlines a bit.
+    DWORD filterType = D3DTFG_FLATCUBIC;
+    Direct3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, filterType);
+    Direct3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, filterType);
+
     D3DVIEWPORT v{ 0 };
     if (Direct3DViewport->GetViewport(&v) == DD_OK) {
         Direct3DViewport->SetViewport(&v);
     }
     
     return true;
-}
-
-void __fastcall SetLight(BYTE r, BYTE g, BYTE b) {
-    light[0] = 128;
-    light[1] = 0;
-    light[2] = 0;
 }
 
 BOOL __fastcall FlipSurfaces() {
@@ -197,12 +200,8 @@ namespace AlwaysD3D {
     public:
         void init() {
             gamelog << COLOR(4) << "Always D3D installed..." << std::endl;
-            // Prevent calls to moving the window
-            MemoryPatch(0x4f58e0) << CALL(SetWindowPosStub) << ASM::NOP;
+            // Prevent this MoveWindow call since it pushes the window off the screen.
             MemoryPatch(0x4f5b8b) << CALL(SetWindowPosStub) << ASM::NOP;
-            //MemoryPatch(0x4f5d19) << CALL(SetWindowPosStub) << ASM::NOP;
-            MemoryPatch(0x4f9eac) << CALL(SetWindowPosStub) << ASM::NOP;
-            MemoryPatch(0x4f9ef6) << CALL(SetWindowPosStub) << ASM::NOP;
 
             MemoryPatch(0x405cb3)
                 << BYTESEQ{ 0xc7, 0x45, 0x08 }
@@ -210,7 +209,6 @@ namespace AlwaysD3D {
                 << BYTESEQ{ 0x8d, 0x0e }
                 << CALL(UpdateD2INI)
                 << NOP_TO(0x405ced); // Force this renderer
-            // MemoryPatch(0x6b9716) << NOP_TO(0x6b9727); // Disable global lighting to manually control it.
             MemoryPatch(0x405cf1)
                 << BYTESEQ{ 0xb3, 0x01, ASM::NOP } // Force this window mode
             << NOP_TO(0x405cf7);
@@ -227,7 +225,6 @@ namespace AlwaysD3D {
             MemoryPatch(0x6b517d) << CALL(CreateSecondarySurfaceIntercept);
             MemoryPatch(0x6b1c30) << JUMP(FlipSurfaces);
             MemoryPatch(0x6b57be) << CALL(BeginScene) << BYTESEQ{ 0xc2, 0x08, 0x00 };
-            MemoryPatch(0x6b5796) << CALL(SetLight);
             MemoryPatch(0x4f5570) << JUMP(GetWindowSizeByResolutionMode);
             MemoryPatch(0x44ba30) << CALL(ScreenSizeHook) << NOP_TO(0x44ba7c);
             MemoryPatch(0x6b2030) << ASM::RET; // Disable min/mag filters.
