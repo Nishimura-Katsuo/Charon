@@ -29,7 +29,6 @@ HMODULE __stdcall multi(LPSTR Class, LPSTR Window) {
 class : public Feature {
 public:
     void init() {
-        gamelog << COLOR(4) << "Installing misc patches and features..." << std::endl;
 		MemoryPatch(0x4F5623) << CALL(multi) << ASM::NOP; // Allow multiple windows open
         MemoryPatch(0x476D40) << ASM::RET; // Ignore shaking requests
         MemoryPatch(0x43BF60) << ASM::RET; // Prevent battle.net connections

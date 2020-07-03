@@ -28,7 +28,6 @@ namespace MPQLoader {
     class : public Feature {
     public:
         void init() {
-            gamelog << COLOR(4) << "MPQ Loader installed..." << std::endl;
             MemoryPatch(0x4fac38) << CALL(GetUseDirect);
 
             int argc = 0;

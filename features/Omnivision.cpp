@@ -12,7 +12,7 @@ namespace Omnivision {
     class : public Feature {
     public:
         void init() {
-            gamelog << COLOR(4) << "Installing debug omnivision..." << std::endl;
+            //gamelog << COLOR(4) << "Installing debug omnivision..." << std::endl;
         }
 
         void gameLoop() {

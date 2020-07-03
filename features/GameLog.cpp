@@ -47,7 +47,7 @@ namespace GameLog {
         DWORD start = 0;
     public:
         void init() {
-            gamelog << COLOR(4) << "Game log installed..." << std::endl;
+            //gamelog << COLOR(4) << "Game log installed..." << std::endl;
         }
 
         void gamePostDraw() {

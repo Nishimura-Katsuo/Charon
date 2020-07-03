@@ -51,8 +51,6 @@ public:
     }
 
     void init() {
-        gamelog << COLOR(4) << "Installing debug mode..." << std::endl;
-
         State["debugMode"] = false;
 
         MemoryPatch(0x476CDC) << CALL(_drawFloor); // Allow disabling the floor.

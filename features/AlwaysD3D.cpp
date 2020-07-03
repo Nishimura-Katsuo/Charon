@@ -199,7 +199,6 @@ namespace AlwaysD3D {
     class : public Feature {
     public:
         void init() {
-            gamelog << COLOR(4) << "Always D3D installed..." << std::endl;
             // Prevent this MoveWindow call since it pushes the window off the screen.
             MemoryPatch(0x4f5b8b) << CALL(SetWindowPosStub) << ASM::NOP;
 

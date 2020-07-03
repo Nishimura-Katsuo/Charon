@@ -19,8 +19,6 @@ struct DeferredPatch {
 class : public Feature {
 public:
     void init() {
-        gamelog << COLOR(4) << "Installing patch command..." << std::endl;
-
         ChatInputCallbacks[L"/patch"] = [](std::wstring cmd, InputStream wchat) -> BOOL {
             DWORD address;
             int size;

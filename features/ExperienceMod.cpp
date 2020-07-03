@@ -32,7 +32,6 @@ namespace ExperienceMod {
     class : public Feature {
     public:
         void init() {
-            gamelog << COLOR(4) << "Installing experience modifier..." << std::endl;
             // Rewrite players count modification and leave to our handler - 42 bytes total
             MemoryPatch(0x47c4e4)
                 << ASM::PUSHAD

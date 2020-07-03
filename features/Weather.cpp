@@ -19,8 +19,6 @@ namespace Weather {
     class : public Feature {
     public:
         void init() {
-            gamelog << COLOR(4) << "Installing weather patch..." << std::endl;
-
             MemoryPatch(0x476D23) << CALL(drawWeatherIntercept);
 
             HotkeyCallbacks[VK_INSERT] = [&](LPARAM options) -> BOOL {

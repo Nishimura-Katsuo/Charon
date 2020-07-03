@@ -25,7 +25,6 @@ public:
     }
 
     void init() {
-        gamelog << COLOR(4) << "Installing color swatch..." << std::endl;
         ChatInputCallbacks[L"/swatch"] = [&](std::wstring cmd, InputStream wchat) -> BOOL {
             toggleSwatch();
             return FALSE;
