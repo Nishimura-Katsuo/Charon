@@ -351,6 +351,11 @@ namespace D2 {
             DWORD _4[2];             // 0x50
             Level* pLevel;           // 0x58
             PresetUnit* pPreset;     // 0x5C
+            WORD getCollision(DWORD localx, DWORD localy, WORD mask);
+            DWORD getWorldX();
+            DWORD getWorldY();
+            DWORD getWorldWidth();
+            DWORD getWorldHeight();
         };
 
 #pragma pack(pop)

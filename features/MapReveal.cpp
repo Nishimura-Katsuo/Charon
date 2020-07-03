@@ -18,13 +18,6 @@ REMOTEFUNC(void __stdcall, RevealAutomapRoom, (D2::Types::Room1* pRoom1, DWORD d
 REMOTEFUNC(D2::Types::AutomapLayer2* __fastcall, GetLayer, (DWORD dwLevelNo), 0x61E470);
 REMOTEREF(D2::Types::AutomapLayer*, AutomapLayer, 0x7A5164);
 
-class FoundExit {
-public:
-    DPOINT origin;
-    DPOINT target;
-    DWORD type;
-};
-
 struct RevealData {
     bool isRevealed = false;
     D2::Types::Room2* room2 = nullptr;
@@ -38,7 +31,6 @@ class : public Feature {
     bool inGame = false;
 
     std::map<DWORD, RevealData> revealdata;
-    std::map<DWORD, std::vector<FoundExit>> RevealedExits;
 
 public:
     void init() {
@@ -71,40 +63,13 @@ public:
         inGame = false;
     }
 
-    void gameAutomapPostDraw() {
-        D2::Types::UnitAny* player = D2::PlayerUnit;
-        if (player) {
-            D2::Types::Level* level = player->pPath->pRoom1->pRoom2->pLevel;
-            if (level) {
-                for (D2::Types::Room2* room = player->pPath->pRoom1->pRoom2->pLevel->pRoom2First; room; room = room->pRoom2Next) {
-                    if (room->pPreset) {
-                        for (D2::Types::PresetUnit* ps = room->pPreset; ps; ps = ps->pPresetNext) {
-                            if (ps->dwType == 5) {
-                                DrawAutomapRadialShape({ (double)room->dwPosX * 5 + ps->dwPosX, (double)room->dwPosY * 5 + ps->dwPosY }, 4, 8, 0x83, M_PI / 8);
-                            }
-                        }
-                    }
-                }
-
-                for (FoundExit exit : RevealedExits[level->dwLevelNo]) {
-                    //DrawLine(WorldToAutomap(exit.origin), WorldToAutomap(exit.target), 0x83);
-                }
-            }
+    bool EnsureRoom(D2::Types::Room2* current) {
+        if (current->pRoom1 != nullptr) {
+            return true;
         }
-    }
 
-    void CheckExits(D2::Types::Room2* current) {
-        FoundExit exit;
-        int x1 = 0, y1 = 0;
-        int x2 = 0, y2 = 0;
-
-        for (unsigned int c = 0; c < current->dwRoomsNear; c++) {
-            if (current->pLevel->dwLevelNo != current->pRoom2Near[c]->pLevel->dwLevelNo && (current->dwPosX == current->pRoom2Near[c]->dwPosX || current->dwPosY == current->pRoom2Near[c]->dwPosY)) {
-                exit.origin = { ((double)current->dwPosX + (double)current->dwSizeX / 2) * 5, ((double)current->dwPosY + (double)current->dwSizeY / 2) * 5 };
-                exit.target = { ((double)current->pRoom2Near[c]->dwPosX + (double)current->pRoom2Near[c]->dwSizeX / 2) * 5, ((double)current->pRoom2Near[c]->dwPosY + (double)current->pRoom2Near[c]->dwSizeY / 2) * 5 };
-                RevealedExits[current->pLevel->dwLevelNo].push_back(exit);
-            }
-        }
+        D2::AddRoomData(current->pLevel->pMisc->pAct, current->pLevel->dwLevelNo, current->dwPosX, current->dwPosY, current->pRoom1);
+        return current->pRoom1 != nullptr;
     }
 
     void RevealCurrentLevel() {
@@ -123,19 +88,10 @@ public:
 
                 for (; c > 0 && room2 != nullptr; c--) {
                     if (room2->pLevel && room2->pLevel->pMisc && room2->pLevel->pMisc->pAct) {
-                        if (room2->pRoom1 == nullptr) {
-                            D2::AddRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, room2->pRoom1);
-
-                            if (room2->pRoom1 != nullptr) {
-                                RevealAutomapRoom(room2->pRoom1, TRUE, revealdata[level->dwLevelNo].layer);
-                                CheckExits(room2);
-                                // Not sure that we need to unload the room again... we're going to need it again later.
-                                // D2::RemoveRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, room2->pRoom1);
-                            }
-                        }
-                        else {
+                        if (EnsureRoom(room2)) {
                             RevealAutomapRoom(room2->pRoom1, TRUE, revealdata[level->dwLevelNo].layer);
-                            CheckExits(room2);
+                            // Not sure that we need to unload the room again... we're going to need it again later.
+                            // D2::RemoveRoomData(room2->pLevel->pMisc->pAct, room2->pLevel->dwLevelNo, room2->dwPosX, room2->dwPosY, room2->pRoom1);
                         }
                     }
 

@@ -220,5 +220,25 @@ namespace D2 {
         WORD Room1::getCollision(DWORD localx, DWORD localy, WORD mask) {
             return Coll->pMapStart[localx + localy * Coll->dwSizeGameX] & mask;
         }
+
+        WORD Room2::getCollision(DWORD localx, DWORD localy, WORD mask) {
+            return pRoom1->Coll->pMapStart[localx + localy * pRoom1->Coll->dwSizeGameX] & mask;
+        }
+
+        DWORD Room2::getWorldX() {
+            return pRoom1->dwXStart;
+        }
+
+        DWORD Room2::getWorldY() {
+            return pRoom1->dwYStart;
+        }
+
+        DWORD Room2::getWorldWidth() {
+            return pRoom1->dwXSize;
+        }
+
+        DWORD Room2::getWorldHeight() {
+            return pRoom1->dwYSize;
+        }
     }
 }
